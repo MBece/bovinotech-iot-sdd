@@ -1,122 +1,196 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import { AuthProvider, useAuth } from './features/auth/AuthContext';
+import { LoginForm } from './features/auth/LoginForm';
+import { authService } from './features/auth/authService';
+import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0)
+function Dashboard() {
+  const { user, role, logout } = useAuth();
+  const [testMessage, setTestMessage] = useState(null);
+  const [testError, setTestError] = useState(null);
+  const [loadingTest, setLoadingTest] = useState(false);
+
+  const handleTestVetEndpoint = async () => {
+    setLoadingTest(true);
+    setTestMessage(null);
+    setTestError(null);
+    try {
+      const res = await authService.testVetOnly(user.token);
+      setTestMessage(res.message || 'Acceso concedido exitosamente');
+    } catch (err) {
+      setTestError(err.message || 'Error de acceso');
+    } finally {
+      setLoadingTest(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <div style={dashboardStyles.container}>
+      <header style={dashboardStyles.header}>
         <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+          <h1 style={dashboardStyles.brand}>BovinoTech IoT</h1>
+          <p style={dashboardStyles.userTag}>
+            Usuario: <strong>{user?.email || 'Autenticado'}</strong> | Rol:{' '}
+            <span
+              style={{
+                ...dashboardStyles.badge,
+                backgroundColor: role === 'VETERINARIO' ? '#3b82f6' : '#10b981',
+              }}
+            >
+              {role}
+            </span>
           </p>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+        <button onClick={logout} style={dashboardStyles.logoutBtn}>
+          Cerrar Sesión
         </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main style={dashboardStyles.main}>
+        <div style={dashboardStyles.card}>
+          <h2>Control de Acceso Basado en Roles (RBAC)</h2>
+          <p>
+            Su cuenta actual posee el rol de <strong>{role}</strong>.
+            {role === 'VETERINARIO'
+              ? ' Tiene permisos clínicos completos, incluyendo aprobación de tratamientos y resolución de conflictos SINIGÁN V6.'
+              : ' Tiene permisos de campo para pesaje, geocercas y registro de eventos sanitarios preliminares.'}
+          </p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <div style={dashboardStyles.actionBox}>
+            <h3>Prueba de Permisos Veterinarios (GET /auth/test-vet-only)</h3>
+            <p style={dashboardStyles.hint}>
+              Haga clic para validar si el token actual tiene privilegios de Veterinario:
+            </p>
+            <button
+              onClick={handleTestVetEndpoint}
+              disabled={loadingTest}
+              style={dashboardStyles.testBtn}
+            >
+              {loadingTest ? 'Consultando...' : 'Verificar Permisos de Veterinario'}
+            </button>
+
+            {testMessage && (
+              <div style={dashboardStyles.successBox}>
+                ✅ {testMessage} (Código 200 OK)
+              </div>
+            )}
+
+            {testError && (
+              <div style={dashboardStyles.errorBox}>
+                🚫 {testError} (Código 403 Forbidden)
+              </div>
+            )}
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      </main>
+    </div>
+  );
 }
 
-export default App
+function MainContent() {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Dashboard /> : <LoginForm />;
+}
+
+export function App() {
+  return (
+    <AuthProvider>
+      <MainContent />
+    </AuthProvider>
+  );
+}
+
+const dashboardStyles = {
+  container: {
+    maxWidth: '800px',
+    margin: '2rem auto',
+    padding: '1rem',
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: '1rem',
+    borderBottom: '1px solid #e5e7eb',
+    marginBottom: '2rem',
+  },
+  brand: {
+    margin: 0,
+    fontSize: '1.75rem',
+    color: '#065f46',
+  },
+  userTag: {
+    margin: '0.4rem 0 0 0',
+    color: '#4b5563',
+    fontSize: '0.9rem',
+  },
+  badge: {
+    color: '#ffffff',
+    padding: '0.2rem 0.5rem',
+    borderRadius: '4px',
+    fontSize: '0.8rem',
+    fontWeight: '700',
+  },
+  logoutBtn: {
+    padding: '0.5rem 1rem',
+    borderRadius: '6px',
+    border: '1px solid #ef4444',
+    backgroundColor: '#ffffff',
+    color: '#ef4444',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  main: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    padding: '1.5rem',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    textAlign: 'left',
+    color: '#1f2937',
+  },
+  actionBox: {
+    marginTop: '1.5rem',
+    padding: '1rem',
+    borderRadius: '8px',
+    backgroundColor: '#f9fafb',
+    border: '1px solid #e5e7eb',
+  },
+  hint: {
+    color: '#6b7280',
+    fontSize: '0.875rem',
+    margin: '0.5rem 0 1rem 0',
+  },
+  testBtn: {
+    padding: '0.6rem 1.2rem',
+    borderRadius: '6px',
+    border: 'none',
+    backgroundColor: '#3b82f6',
+    color: '#ffffff',
+    fontWeight: '600',
+    cursor: 'pointer',
+  },
+  successBox: {
+    marginTop: '1rem',
+    padding: '0.75rem',
+    backgroundColor: '#dcfce7',
+    color: '#15803d',
+    borderRadius: '6px',
+    fontWeight: '500',
+  },
+  errorBox: {
+    marginTop: '1rem',
+    padding: '0.75rem',
+    backgroundColor: '#fee2e2',
+    color: '#b91c1c',
+    borderRadius: '6px',
+    fontWeight: '500',
+  },
+};
+
+export default App;
