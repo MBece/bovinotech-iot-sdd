@@ -1,0 +1,45 @@
+﻿name: BovinoTech CI/CD & DevSecOps
+
+on:
+  push:
+    branches: [ main, "feat/*" ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-quality-and-security:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest httpx bandit
+      - name: Ejecutar pruebas automatizadas (TDD)
+        run: pytest
+      - name: Auditoría estática de seguridad (Bandit SAST)
+        run: bandit -r app -ll
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Instalar y compilar React PWA
+        run: |
+          if [ -f package.json ]; then
+            npm ci || npm install
+            npm run build
+          fi
