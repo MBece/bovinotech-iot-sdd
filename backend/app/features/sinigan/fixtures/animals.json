@@ -1,0 +1,62 @@
+[
+  {
+    "din": "DIN-DEMO-000001",
+    "animalName": "Luna",
+    "animalNumber": "ANIMAL-DEMO-001",
+    "species": "BOVINO",
+    "sex": "HEMBRA",
+    "ageGroup": "ADULTO",
+    "establishment": {
+      "sitCode": "SIT-DEMO-001",
+      "name": "Finca El Roble"
+    }
+  },
+  {
+    "din": "DIN-DEMO-000002",
+    "animalName": "Sol",
+    "animalNumber": "ANIMAL-DEMO-002",
+    "species": "BOVINO",
+    "sex": "MACHO",
+    "ageGroup": "JOVEN",
+    "establishment": {
+      "sitCode": "SIT-DEMO-001",
+      "name": "Finca El Roble"
+    }
+  },
+  {
+    "din": "DIN-DEMO-000003",
+    "animalName": "Nube",
+    "animalNumber": "ANIMAL-DEMO-003",
+    "species": "BOVINO",
+    "sex": "HEMBRA",
+    "ageGroup": "TERNERO",
+    "establishment": {
+      "sitCode": "SIT-DEMO-001",
+      "name": "Finca El Roble"
+    }
+  },
+  {
+    "din": "DIN-DEMO-000004",
+    "animalName": "Río",
+    "animalNumber": "ANIMAL-DEMO-004",
+    "species": "BUFALINO",
+    "sex": "MACHO",
+    "ageGroup": "ADULTO",
+    "establishment": {
+      "sitCode": "SIT-DEMO-002",
+      "name": "Hacienda La Esperanza"
+    }
+  },
+  {
+    "din": "DIN-DEMO-000005",
+    "animalName": "Brisa",
+    "animalNumber": "ANIMAL-DEMO-005",
+    "species": "BUFALINO",
+    "sex": "HEMBRA",
+    "ageGroup": "JOVEN",
+    "establishment": {
+      "sitCode": "SIT-DEMO-002",
+      "name": "Hacienda La Esperanza"
+    }
+  }
+]
