@@ -1,113 +1,82 @@
-# Implementation Plan: [FEATURE]
+# Plan de Implementación: [NOMBRE DE LA FUNCIONALIDAD]
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Rama**: `[###-nombre-funcionalidad]` | **Fecha**: [FECHA] | **Spec**: [specs/[###-nombre-funcionalidad]/spec.md](spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+**Entrada**: Especificación funcional desde `/specs/[###-nombre-funcionalidad]/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command; its definition describes the execution workflow.
+## Resumen
 
-## Summary
+[Extracción de la especificación: requisito principal del dominio ganadero y enfoque técnico por rebanada vertical]
 
-[Extract from feature spec: primary requirement + technical approach from research]
+## Contexto Técnico
 
-## Technical Context
+**Lenguaje / Versiones**: Python 3.11+, JavaScript (React 18+ con Vite)
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Dependencias Principales**: FastAPI, Pydantic v2, SQLAlchemy, SQLite, React PWA.
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Almacenamiento**: SQLite en backend / Prefijo estandarizado `bovinotech_offline_<modulo>_queue` en cliente offline.
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Estrategia de Pruebas**: TDD con `pytest` en `backend/tests/` (unitarias, contratos y seguridad).
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Plataforma y Entorno**: Servicio Web API + PWA Offline-First para entornos rurales.
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Objetivos de Rendimiento y SLOs**:
+- Pipeline CI completado en menos de 90 segundos.
+- Latencia de procesamiento de alertas críticas < 10 segundos con 99.9% de integridad.
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Estándares de Calidad y Ciberseguridad**:
+- Calidad de software bajo ISO/IEC 25010:2023.
+- Seguridad de telemetría IoT y dispositivos bajo NISTIR 8259A (autenticación, integridad y cero secretos quemados).
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+## Verificación de Constitución (Constitution Check)
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+*COMPUERTA OBLIGATORIA: Debe validarse antes de implementar.*
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+- [ ] **Aislamiento Modular Estricto:** Todo el código se desarrollará exclusivamente dentro de `backend/app/features/<modulo>/` y `frontend/src/features/<modulo>/`.
+- [ ] **Integración en Puntos Compartidos:** Los únicos archivos fuera del módulo son `backend/app/main.py` y `frontend/src/App.jsx`, agregando código solo al final del bloque.
+- [ ] **Desacoplamiento entre HUs:** La entidad se vincula a animales mediante `sinigan_code` o `bovine_id` sin Foreign Keys bloqueantes contra tablas de otras HUs en desarrollo paralelo. Incluye su propio *seed* mínimo.
+- [ ] **Historial Append-Only:** Ninguna operación destructiva `UPDATE` o `DELETE` sobre eventos sanitarios históricos. Correcciones vinculadas mediante `corrected_event_id`.
+- [ ] **Jerarquía SINIGÁN V6:** Validación de identidad oficial y enrutamiento de discrepancias a cola de conflictos veterinarios.
+- [ ] **Idempotencia y Operación Offline-First:** Uso de `client_event_id` (UUID) y persistencia local estandarizada ante pérdida de señal rural.
+- [ ] **Menú Lateral (Sidebar) y RBAC:** El módulo expone sus metadatos de navegación para el App Shell y filtra componentes por rol (`OPERARIO` vs `VETERINARIO`).
+- [ ] **Diseño Responsive Mobile-First:** Vistas utilizables en smartphones de campo (< 768 px) con botones táctiles >= 48x48 px y alto contraste solar.
+- [ ] **Seguridad DevSecOps:** Validación Pydantic en todas las entradas/salidas y cero credenciales expuestas en repositorio.
 
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+## Estructura del Proyecto (Vertical Slicing)
 
-## Constitution Check
-
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
-
-[Gates determined based on constitution file]
-
-## Project Structure
-
-### Documentation (this feature)
-
-```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
-```
-
-### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
+### Backend: `backend/app/features/<modulo>/`
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+backend/app/features/<modulo>/
+├── __init__.py
+├── models.py        # Modelos SQLAlchemy de la rebanada
+├── schemas.py       # Contratos Pydantic de entrada/salida
+├── service.py       # Lógica de negocio y reglas ganaderas
+└── router.py        # Endpoints FastAPI expuestos
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+### Frontend: `frontend/src/features/<modulo>/`
 
-## Complexity Tracking
+```text
+frontend/src/features/<modulo>/
+├── index.js         # Exporta Componente Principal y objeto navItem (id, label, icon, role)
+├── <Modulo>View.jsx # Vista principal adaptativa (Mobile-First < 768px y Desktop >= 768px)
+└── services/        # Cliente API y manejo de cola local offline
+```
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+### Pruebas Automatizadas: `backend/tests/`
 
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+```text
+backend/tests/
+├── unit/test_<modulo>_*.py      # Pruebas de dominio, inmutabilidad y cálculo
+├── contract/test_<modulo>_*.py  # Pruebas de endpoints, esquemas y códigos HTTP
+└── security/test_<modulo>_*.py  # Pruebas de RBAC y validación NISTIR 8259A
+```
+
+## Registro de Complejidad y Excepciones
+
+> **Llenar ÚNICAMENTE si alguna compuerta de la Constitución requiere una justificación técnica especial**
+
+| Compuerta Afectada | Motivo Técnico Ineludible | Alternativa Más Simple Descartada |
+|---|---|---|
+| [Ninguna] | [N/A - Cumple al 100% la constitución] | [N/A] |
