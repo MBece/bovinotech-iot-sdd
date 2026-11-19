@@ -1,4 +1,4 @@
-﻿# BovinoTech IoT - Plataforma de Trazabilidad Ganadera (SDD + Multiagente)
+# BovinoTech IoT - Plataforma de Trazabilidad Ganadera (SDD + Multiagente)
 
 Plataforma agroindustrial offline-first para la gestion sanitaria, trazabilidad bovina compatible con **SINIGAN V6** y monitoreo telemetrico IoT en entornos rurales con conectividad intermitente.
 
@@ -69,6 +69,8 @@ Inicia gemini en la raiz del proyecto (la primera vez pedira autenticar con cuen
 ---
 
 ## Flujo de Trabajo SDD Multiagente (Obligatorio por Historia)
+
+> 📖 **Guía Completa de Contribución:** Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para ver la guía detallada de comandos Git, verificación pre-push y el manual de revisión y aprobación de Pull Requests.
 
 1. Crear rama aislada: git checkout -b feat/hu-0X-nombre-modulo
 2. Abrir Gemini CLI: gemini
