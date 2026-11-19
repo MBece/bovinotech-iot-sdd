@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { LoginForm } from './features/auth/LoginForm';
 import { authService } from './features/auth/authService';
+import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
+import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
+import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
 import './App.css';
 
 function Dashboard() {
@@ -9,6 +12,8 @@ function Dashboard() {
   const [testMessage, setTestMessage] = useState(null);
   const [testError, setTestError] = useState(null);
   const [loadingTest, setLoadingTest] = useState(false);
+  const [selectedAnimal, setSelectedAnimal] = useState(null);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
 
   const handleTestVetEndpoint = async () => {
     setLoadingTest(true);
@@ -47,8 +52,34 @@ function Dashboard() {
       </header>
 
       <main style={dashboardStyles.main}>
+        <section style={dashboardStyles.intro}>
+          <span style={dashboardStyles.kicker}>MVP académico · trazabilidad rural</span>
+          <h2 style={dashboardStyles.introTitle}>Del DIN a un evento sanitario verificable</h2>
+          <p style={dashboardStyles.introText}>
+            Consulte un animal por DIN, capture un evento incluso sin conexión y sincronícelo de forma idempotente cuando la API esté disponible.
+          </p>
+        </section>
+
+        <div style={dashboardStyles.workflowGrid}>
+          <SiniganAnimalLookup token={user.token} onAnimalSelected={setSelectedAnimal} />
+          <OfflineSanitaryCapture
+            token={user.token}
+            userEmail={user.email}
+            selectedAnimal={selectedAnimal}
+            onSynchronized={() => setHistoryRefresh((value) => value + 1)}
+          />
+        </div>
+
+        <SanitaryHistory
+          key={selectedAnimal?.din || 'sin-animal'}
+          token={user.token}
+          role={role}
+          selectedAnimal={selectedAnimal}
+          refreshSignal={historyRefresh}
+        />
+
         <div style={dashboardStyles.card}>
-          <h2>Control de Acceso Basado en Roles (RBAC)</h2>
+          <h2>Control de acceso por roles</h2>
           <p>
             Su cuenta actual posee el rol de <strong>{role}</strong>.
             {role === 'VETERINARIO'
@@ -57,7 +88,7 @@ function Dashboard() {
           </p>
 
           <div style={dashboardStyles.actionBox}>
-            <h3>Prueba de Permisos Veterinarios (GET /auth/test-vet-only)</h3>
+            <h3>Prueba de permisos veterinarios</h3>
             <p style={dashboardStyles.hint}>
               Haga clic para validar si el token actual tiene privilegios de Veterinario:
             </p>
@@ -71,13 +102,13 @@ function Dashboard() {
 
             {testMessage && (
               <div style={dashboardStyles.successBox}>
-                ✅ {testMessage} (Código 200 OK)
+                ✅ {testMessage} (Código 200 - correcto)
               </div>
             )}
 
             {testError && (
               <div style={dashboardStyles.errorBox}>
-                🚫 {testError} (Código 403 Forbidden)
+                🚫 {testError} (Código 403 - acceso denegado)
               </div>
             )}
           </div>
@@ -145,6 +176,35 @@ const dashboardStyles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '1.5rem',
+  },
+  intro: {
+    padding: '1.5rem',
+    borderRadius: '14px',
+    background: 'linear-gradient(135deg, #0d3f30, #176b4d)',
+    color: '#ffffff',
+    textAlign: 'left',
+  },
+  kicker: {
+    fontSize: '0.7rem',
+    fontWeight: '800',
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    color: '#bfe8d4',
+  },
+  introTitle: {
+    margin: '0.35rem 0 0.6rem',
+    color: '#ffffff',
+    fontSize: '1.55rem',
+  },
+  introText: {
+    color: '#d7eee3',
+    lineHeight: '1.5',
+  },
+  workflowGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '1rem',
+    alignItems: 'start',
   },
   card: {
     backgroundColor: '#ffffff',
