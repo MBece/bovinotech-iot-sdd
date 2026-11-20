@@ -5,6 +5,7 @@ import { authService } from './features/auth/authService';
 import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
 import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
 import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
+import { FeverAlertsDashboard } from './features/alerta_fiebre/FeverAlertsDashboard';
 import './App.css';
 
 function Dashboard() {
@@ -113,6 +114,8 @@ function Dashboard() {
             )}
           </div>
         </div>
+
+        <FeverAlertsDashboard token={user.token} userRole={role} />
       </main>
     </div>
   );

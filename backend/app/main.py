@@ -13,6 +13,11 @@ from app.features.sanitary_events.router import (
     router as sync_router,
 )
 from app.features.sinigan.router import router as sinigan_router
+from app.features.alerta_fiebre.models import (  # noqa: F401
+    FeverAlert,
+    FeverAlertAttention,
+)
+from app.features.alerta_fiebre.router import router as alerta_fiebre_router
 
 # Create tables and execute seed
 Base.metadata.create_all(bind=engine)
@@ -39,6 +44,11 @@ app.include_router(
     sanitary_events_router,
     prefix="/sanitary-events",
     tags=["Eventos sanitarios"],
+)
+app.include_router(
+    alerta_fiebre_router,
+    prefix="/api/v1/alerta-fiebre",
+    tags=["Alerta Fiebre"],
 )
 
 
