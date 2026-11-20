@@ -4,7 +4,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base, get_db
-from app.features.auth.router import seed_initial_users
+try:
+    from app.features.auth.router import seed_initial_users
+except ImportError:
+    seed_initial_users = None
 from app.main import app
 
 
@@ -33,7 +36,8 @@ def isolated_database():
     Base.metadata.drop_all(bind=test_engine)
     Base.metadata.create_all(bind=test_engine)
     db = TestingSessionLocal()
-    seed_initial_users(db)
+    if seed_initial_users:
+        seed_initial_users(db)
     db.close()
     app.dependency_overrides[get_db] = override_get_db
     yield
