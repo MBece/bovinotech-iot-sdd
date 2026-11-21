@@ -22,7 +22,7 @@ def test_login_invalid_credentials():
         data={"username": "wrong@bovinotech.co", "password": "wrongpassword"}
     )
     assert response.status_code == 401
-    assert response.json()["detail"] == "Incorrect email or password"
+    assert response.json()["detail"] == "Correo o contraseña incorrectos"
 
 def test_rbac_veterinario_only_access_denied_for_operario():
     # Login as operario

@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import Base, engine
 from app.features.auth.models import User  # noqa: F401
 from app.features.auth.router import router as auth_router, seed_initial_users
+from app.features.auth.schema_migration import ensure_auth_schema
 from app.features.sanitary_events.models import (  # noqa: F401
     SanitaryEvent,
     SanitaryEventCorrection,
@@ -16,6 +17,7 @@ from app.features.sinigan.router import router as sinigan_router
 
 # Create tables and execute seed
 Base.metadata.create_all(bind=engine)
+ensure_auth_schema(engine)
 seed_initial_users()
 
 app = FastAPI(title="BovinoTech IoT API", version="1.0.0")
