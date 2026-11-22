@@ -3,8 +3,13 @@ import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { LoginForm } from './features/auth/LoginForm';
 import { authService } from './features/auth/authService';
 import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
+import { SiniganReconciliation } from './features/sinigan-sync/SiniganReconciliation';
 import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
 import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
+import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
+import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
+import { UserAdminPanel } from './features/auth/UserAdminPanel';
+import { roleInfo } from './features/auth/roles';
 import './App.css';
 
 function Dashboard() {
@@ -39,11 +44,12 @@ function Dashboard() {
             <span
               style={{
                 ...dashboardStyles.badge,
-                backgroundColor: role === 'VETERINARIO' ? '#3b82f6' : '#10b981',
+                backgroundColor: roleInfo(role).color,
               }}
             >
               {role}
             </span>
+            {user?.farmId && <> | Finca: <strong>{user.farmId}</strong></>}
           </p>
         </div>
         <button onClick={logout} style={dashboardStyles.logoutBtn}>
@@ -52,6 +58,7 @@ function Dashboard() {
       </header>
 
       <main style={dashboardStyles.main}>
+        <SessionStatusBanner />
         <section style={dashboardStyles.intro}>
           <span style={dashboardStyles.kicker}>MVP académico · trazabilidad rural</span>
           <h2 style={dashboardStyles.introTitle}>Del DIN a un evento sanitario verificable</h2>
@@ -78,13 +85,18 @@ function Dashboard() {
           refreshSignal={historyRefresh}
         />
 
+        <SiniganReconciliation
+          key={user.farmId ?? 'sin-finca'}
+          token={user.token}
+          role={role}
+          farmId={user.farmId}
+        />
+
         <div style={dashboardStyles.card}>
           <h2>Control de acceso por roles</h2>
           <p>
-            Su cuenta actual posee el rol de <strong>{role}</strong>.
-            {role === 'VETERINARIO'
-              ? ' Tiene permisos clínicos completos, incluyendo aprobación de tratamientos y resolución de conflictos SINIGÁN V6.'
-              : ' Tiene permisos de campo para pesaje, geocercas y registro de eventos sanitarios preliminares.'}
+            Su cuenta actual posee el rol de <strong>{roleInfo(role).label}</strong>.{' '}
+            {roleInfo(role).description}
           </p>
 
           <div style={dashboardStyles.actionBox}>
@@ -113,13 +125,16 @@ function Dashboard() {
             )}
           </div>
         </div>
+
+        {role === 'ADMINISTRADOR' && <UserAdminPanel />}
       </main>
     </div>
   );
 }
 
 function MainContent() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, mustChangePassword } = useAuth();
+  if (isAuthenticated && mustChangePassword) return <ChangePasswordForm />;
   return isAuthenticated ? <Dashboard /> : <LoginForm />;
 }
 

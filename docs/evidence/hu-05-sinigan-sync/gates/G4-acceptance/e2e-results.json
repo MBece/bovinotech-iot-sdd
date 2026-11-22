@@ -1,0 +1,302 @@
+{
+  "startedAt": "2026-11-22T19:04:24.617Z",
+  "appUrl": "http://localhost:5173",
+  "apiUrl": "http://localhost:8000",
+  "expectedLabel": "MODO SIMULADO (SINIGÁN V6 MOCK)",
+  "steps": {
+    "baseline": {
+      "countsBefore": {
+        "field_animal_records": 5,
+        "reconciliation_tickets": 0,
+        "reconciliation_discrepancies": 0,
+        "reconciliation_resolutions": 0
+      },
+      "fixtureSha256Before": "7db8f53b55c071278868b85bf071ef859a30d84e56c120ad436dfe376100011c"
+    },
+    "ac01": {
+      "din": "DIN-DEMO-000001",
+      "observed": {
+        "label": "MODO SIMULADO (SINIGÁN V6 MOCK)",
+        "resultText": "Conciliación consistente",
+        "animalName": "Luna",
+        "sitCode": "SIT-DEMO-001",
+        "officialSourceLine": "comparison badge visible"
+      },
+      "screenshot": "C:\\Users\\Juan Gutierrez\\AppData\\Local\\Temp\\opencode\\wt-hu-05-sinigan-sync\\docs\\evidence\\hu-05-sinigan-sync\\screenshots\\AC-01.png"
+    },
+    "ac02": {
+      "din": "DIN-DEMO-999999",
+      "observedMessage": "DIN no encontrado en las referencias disponibles.",
+      "countsBefore": {
+        "field_animal_records": 5,
+        "reconciliation_tickets": 0,
+        "reconciliation_discrepancies": 0,
+        "reconciliation_resolutions": 0
+      },
+      "countsAfter": {
+        "field_animal_records": 5,
+        "reconciliation_tickets": 0,
+        "reconciliation_discrepancies": 0,
+        "reconciliation_resolutions": 0
+      },
+      "ticketsForUnknownDin": {
+        "items": []
+      },
+      "apiStatusForUnknownDin": 200,
+      "screenshot": "C:\\Users\\Juan Gutierrez\\AppData\\Local\\Temp\\opencode\\wt-hu-05-sinigan-sync\\docs\\evidence\\hu-05-sinigan-sync\\screenshots\\AC-02.png"
+    },
+    "ac03Sex": {
+      "din": "DIN-DEMO-000002",
+      "ticketId": 1,
+      "observed": {
+        "fieldName": "Sexo",
+        "officialValue": "MACHO",
+        "fieldValue": "HEMBRA",
+        "labelVisible": true,
+        "dateColumnVisible": true,
+        "originColumnsVisible": true
+      },
+      "screenshot": "C:\\Users\\Juan Gutierrez\\AppData\\Local\\Temp\\opencode\\wt-hu-05-sinigan-sync\\docs\\evidence\\hu-05-sinigan-sync\\screenshots\\AC-03-sex.png"
+    },
+    "ac03Age": {
+      "din": "DIN-DEMO-000003",
+      "ticketId": 2,
+      "observed": {
+        "fieldName": "Grupo etario",
+        "officialValue": "TERNERO",
+        "fieldValue": "ADULTO",
+        "labelVisible": true,
+        "dateColumnVisible": true,
+        "originColumnsVisible": true
+      },
+      "screenshot": "C:\\Users\\Juan Gutierrez\\AppData\\Local\\Temp\\opencode\\wt-hu-05-sinigan-sync\\docs\\evidence\\hu-05-sinigan-sync\\screenshots\\AC-03.png"
+    },
+    "ac04EmptyReason": {
+      "ticketId": 1,
+      "browserValidation": {
+        "empty": true,
+        "valid": false,
+        "validationMessage": "Rellena este campo.",
+        "matchesInvalid": true
+      },
+      "ticketStillOpen": true,
+      "screenshot": "C:\\Users\\Juan Gutierrez\\AppData\\Local\\Temp\\opencode\\wt-hu-05-sinigan-sync\\docs\\evidence\\hu-05-sinigan-sync\\screenshots\\AC-04-empty-reason.png"
+    },
+    "ac04": {
+      "ticketId": 1,
+      "decision": "OFICIAL_PREVALECE",
+      "reason": "Se valida la ficha oficial y se solicita corrección del registro de campo.",
+      "resolvedBy": "vet@bovinotech.co",
+      "observed": {
+        "successMessage": "Ticket #1 cerrado. La resolución quedó registrada de forma permanente.",
+        "status": "Cerrado",
+        "decisionLabel": "Prevalece la ficha oficial",
+        "reasonVisible": true,
+        "authorVisible": true,
+        "dateVisible": true,
+        "persistentDetailText": "Detalle del ticket #1\nCerrar detalle\nDIN\nDIN-DEMO-000002\nESTADO\nCerrado\nCOMPARADO\n22/11/2026, 2:04:28 p. m.\nCREADO POR\noperario@bovinotech.co\nCREADO\n22/11/2026, 2:04:28 p. m.\nCERRADO\n22/11/2026, 2:04:30 p. m.\n\nOrigen oficial: MODO SIMULADO (SINIGÁN V6 MOCK) · Origen de campo: REGISTRO DE CAMPO\n\nSnapshot de la ficha oficial\nDIN\nDIN-DEMO-000002\nESPECIE\nBOVINO\nSEXO\nMACHO\nGRUPO ETARIO\nJOVEN\nPREDIO\nSIT-DEMO-001\nSnapshot del registro de campo\nDIN\nDIN-DEMO-000002\nESPECIE\nBOVINO\nSEXO\nHEMBRA\nGRUPO ETARIO\nJOVEN\nPREDIO\nSIT-DEMO-001\nDiscrepancias del ticket\nDiscrepancias conservadas en el ticket #1\nCampo\tFicha oficial\tRegistro de campo\tDetectada\nSexo\tMACHO\tHEMBRA\t22/11/2026, 2:04:28 p. m.\nResolución registrada\n\nPrevalece la ficha oficial\n\nSe valida la ficha oficial y se solicita corrección del registro de campo.\n\nvet@bovinotech.co · 22/11/2026, 2:04:30 p. m."
+      },
+      "screenshot": "C:\\Users\\Juan Gutierrez\\AppData\\Local\\Temp\\opencode\\wt-hu-05-sinigan-sync\\docs\\evidence\\hu-05-sinigan-sync\\screenshots\\AC-04.png"
+    },
+    "ac04Http": {
+      "operarioResolutionStatus": 403,
+      "operarioResolutionBody": {
+        "detail": "Acceso denegado: Se requiere rol de Veterinario"
+      },
+      "retryResolutionStatus": 409,
+      "retryResolutionBody": {
+        "detail": "El ticket de conciliación ya está cerrado."
+      },
+      "closedDetail": {
+        "id": 1,
+        "din": "DIN-DEMO-000002",
+        "farmId": 1,
+        "status": "CLOSED",
+        "officialSnapshot": {
+          "din": "DIN-DEMO-000002",
+          "animalName": "Sol",
+          "animalNumber": "ANIMAL-DEMO-002",
+          "species": "BOVINO",
+          "sex": "MACHO",
+          "ageGroup": "JOVEN",
+          "establishment": {
+            "sitCode": "SIT-DEMO-001",
+            "name": "Finca El Roble"
+          }
+        },
+        "fieldSnapshot": {
+          "din": "DIN-DEMO-000002",
+          "species": "BOVINO",
+          "sex": "HEMBRA",
+          "ageGroup": "JOVEN",
+          "sitCode": "SIT-DEMO-001",
+          "establishmentName": "Finca El Roble",
+          "source": "REGISTRO_DE_CAMPO",
+          "updatedAt": "2026-11-20T12:05:00Z"
+        },
+        "officialSource": "MODO SIMULADO (SINIGÁN V6 MOCK)",
+        "fieldSource": "REGISTRO DE CAMPO",
+        "comparedAt": "2026-11-22T19:04:28.145850Z",
+        "createdByEmail": "operario@bovinotech.co",
+        "createdAt": "2026-11-22T19:04:28.145850Z",
+        "closedAt": "2026-11-22T19:04:30.154884Z",
+        "discrepancies": [
+          {
+            "fieldName": "sex",
+            "fieldLabel": "Sexo",
+            "officialValue": "MACHO",
+            "fieldValue": "HEMBRA",
+            "officialSource": "MODO SIMULADO (SINIGÁN V6 MOCK)",
+            "fieldSource": "REGISTRO DE CAMPO",
+            "detectedAt": "2026-11-22T19:04:28.145850Z"
+          }
+        ],
+        "resolution": {
+          "decision": "OFICIAL_PREVALECE",
+          "reason": "Se valida la ficha oficial y se solicita corrección del registro de campo.",
+          "resolvedByEmail": "vet@bovinotech.co",
+          "resolvedAt": "2026-11-22T19:04:30.154884Z"
+        }
+      }
+    },
+    "d10FarmIsolation": {
+      "ticketId": 2,
+      "farm2": {
+        "listingStatus": 200,
+        "listedTicketIds": [],
+        "ticketVisible": false,
+        "detailStatus": 404,
+        "detailBody": {
+          "detail": "Ticket de conciliación no encontrado."
+        },
+        "resolutionStatus": 404,
+        "resolutionBody": {
+          "detail": "Ticket de conciliación no encontrado."
+        }
+      },
+      "farm1": {
+        "listingStatus": 200,
+        "ticketVisible": true,
+        "summaryFarmId": 1,
+        "detailStatus": 200,
+        "detailFarmId": 1,
+        "detailTicketStatus": "OPEN"
+      },
+      "tokenMaterialStored": false
+    },
+    "noOverwrite": {
+      "fixtureSha256Before": "7db8f53b55c071278868b85bf071ef859a30d84e56c120ad436dfe376100011c",
+      "fixtureSha256After": "7db8f53b55c071278868b85bf071ef859a30d84e56c120ad436dfe376100011c",
+      "fixtureUnchanged": true,
+      "fieldRecordsBefore": [
+        {
+          "age_group": "ADULTO",
+          "din": "DIN-DEMO-000001",
+          "establishment_name": "Finca El Roble",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "JOVEN",
+          "din": "DIN-DEMO-000002",
+          "establishment_name": "Finca El Roble",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "ADULTO",
+          "din": "DIN-DEMO-000003",
+          "establishment_name": "Finca El Roble",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "ADULTO",
+          "din": "DIN-DEMO-000004",
+          "establishment_name": "Finca El Roble",
+          "sex": "MACHO",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "JOVEN",
+          "din": "DIN-DEMO-000005",
+          "establishment_name": "Hacienda La Esperanza",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-002",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BUFALINO"
+        }
+      ],
+      "fieldRecordsAfter": [
+        {
+          "age_group": "ADULTO",
+          "din": "DIN-DEMO-000001",
+          "establishment_name": "Finca El Roble",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "JOVEN",
+          "din": "DIN-DEMO-000002",
+          "establishment_name": "Finca El Roble",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "ADULTO",
+          "din": "DIN-DEMO-000003",
+          "establishment_name": "Finca El Roble",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "ADULTO",
+          "din": "DIN-DEMO-000004",
+          "establishment_name": "Finca El Roble",
+          "sex": "MACHO",
+          "sit_code": "SIT-DEMO-001",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BOVINO"
+        },
+        {
+          "age_group": "JOVEN",
+          "din": "DIN-DEMO-000005",
+          "establishment_name": "Hacienda La Esperanza",
+          "sex": "HEMBRA",
+          "sit_code": "SIT-DEMO-002",
+          "source": "REGISTRO_DE_CAMPO",
+          "species": "BUFALINO"
+        }
+      ],
+      "fieldRecordsUnchanged": true,
+      "countsBefore": {
+        "field_animal_records": 5,
+        "reconciliation_tickets": 0,
+        "reconciliation_discrepancies": 0,
+        "reconciliation_resolutions": 0
+      },
+      "countsAfter": {
+        "field_animal_records": 5,
+        "reconciliation_tickets": 2,
+        "reconciliation_discrepancies": 2,
+        "reconciliation_resolutions": 1
+      }
+    }
+  },
+  "finishedAt": "2026-11-22T19:04:31.509Z",
+  "status": "PASS"
+}

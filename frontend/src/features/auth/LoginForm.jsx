@@ -1,10 +1,21 @@
 import { useState } from 'react';
 import { useAuth } from './AuthContext';
+import { FarmSelector } from './FarmSelector';
+
+const DEMO_USERS = [
+  { label: 'Administrador', email: 'admin@bovinotech.co' },
+  { label: 'Operario', email: 'operario@bovinotech.co' },
+  { label: 'Veterinario', email: 'vet@bovinotech.co' },
+  { label: 'Vet. 2 fincas', email: 'vet2@bovinotech.co' },
+  { label: 'Directivo', email: 'directivo@bovinotech.co' },
+];
 
 export const LoginForm = () => {
   const { login, loading, error, setError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Fincas devueltas por el backend cuando el usuario tiene varias (409).
+  const [farmChoices, setFarmChoices] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,9 +26,25 @@ export const LoginForm = () => {
 
     try {
       await login(email, password);
-    } catch {
-      // El error ya es capturado y seteado en AuthContext
+    } catch (err) {
+      if (err.code === 'FARM_SELECTION_REQUIRED') {
+        setFarmChoices(err.farms || []);
+      }
+      // Los demás errores ya quedan en AuthContext.
     }
+  };
+
+  const handleFarmSelected = async (farmId) => {
+    try {
+      await login(email, password, farmId, farmChoices);
+    } catch {
+      // El error ya queda en AuthContext.
+    }
+  };
+
+  const handleCancelFarm = () => {
+    setFarmChoices(null);
+    setError(null);
   };
 
   const handlePreload = (demoEmail, demoPass) => {
@@ -33,6 +60,14 @@ export const LoginForm = () => {
 
       {error && <div style={styles.error}>{error}</div>}
 
+      {farmChoices ? (
+        <FarmSelector
+          farms={farmChoices}
+          loading={loading}
+          onSelect={handleFarmSelected}
+          onCancel={handleCancelFarm}
+        />
+      ) : (
       <form onSubmit={handleSubmit} style={styles.form}>
         <div style={styles.formGroup}>
           <label htmlFor="email" style={styles.label}>
@@ -70,25 +105,22 @@ export const LoginForm = () => {
           {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
         </button>
       </form>
+      )}
 
-      {import.meta.env.DEV && (
+      {import.meta.env.DEV && !farmChoices && (
         <div style={styles.demoSection}>
           <p style={styles.demoLabel}>Acceso rápido de prueba (Solo Desarrollo):</p>
           <div style={styles.demoButtons}>
-            <button
-              type="button"
-              style={styles.demoBtn}
-              onClick={() => handlePreload('operario@bovinotech.co', 'password123')}
-            >
-              Operario
-            </button>
-            <button
-              type="button"
-              style={styles.demoBtn}
-              onClick={() => handlePreload('vet@bovinotech.co', 'password123')}
-            >
-              Veterinario
-            </button>
+            {DEMO_USERS.map((demo) => (
+              <button
+                key={demo.email}
+                type="button"
+                style={styles.demoBtn}
+                onClick={() => handlePreload(demo.email, 'password123')}
+              >
+                {demo.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -179,6 +211,7 @@ const styles = {
   },
   demoButtons: {
     display: 'flex',
+    flexWrap: 'wrap',
     gap: '0.5rem',
     justifyContent: 'center',
   },
