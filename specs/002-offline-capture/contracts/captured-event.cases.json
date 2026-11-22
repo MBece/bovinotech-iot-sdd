@@ -1,0 +1,201 @@
+{
+  "description": "Shared validation cases for CapturedEvent (backend pytest) and eventValidation.js (node --test). 'now' is the reference clock; timestamps are relative to it.",
+  "now": "2026-11-21T14:00:00Z",
+  "base": {
+    "clientEventId": "7f9c2a5e-0b8d-4d7e-9a51-2f3e4c5d6e7f",
+    "din": "DIN-DEMO-000001",
+    "fieldOccurredAt": "2026-11-21T13:45:10Z",
+    "product": null,
+    "doseQuantity": null,
+    "doseUnit": null,
+    "reason": null,
+    "finding": null,
+    "notes": null,
+    "authorEmail": "operario@bovinotech.co",
+    "farmId": 1,
+    "authorVerificationPending": false,
+    "syncStatus": "PENDIENTE_SINCRONIZACION",
+    "validationStatus": "PENDIENTE_VALIDACION",
+    "origin": "OFFLINE_CAPTURE"
+  },
+  "cases": [
+    {
+      "name": "valid vaccination",
+      "patch": {
+        "eventType": "VACCINATION",
+        "product": "Aftosa bivalente",
+        "doseQuantity": 2,
+        "doseUnit": "ml"
+      },
+      "errors": []
+    },
+    {
+      "name": "valid deworming",
+      "patch": {
+        "eventType": "DEWORMING",
+        "product": "Ivermectina",
+        "doseQuantity": 1,
+        "doseUnit": "unidades"
+      },
+      "errors": []
+    },
+    {
+      "name": "valid treatment",
+      "patch": {
+        "eventType": "TREATMENT",
+        "product": "Oxitetraciclina",
+        "doseQuantity": 500,
+        "doseUnit": "mg",
+        "reason": "Neumonía"
+      },
+      "errors": []
+    },
+    {
+      "name": "valid checkup",
+      "patch": {
+        "eventType": "CHECKUP",
+        "finding": "Sin hallazgos"
+      },
+      "errors": []
+    },
+    {
+      "name": "valid checkup with expired session",
+      "patch": {
+        "eventType": "CHECKUP",
+        "finding": "Cojera leve",
+        "authorVerificationPending": true
+      },
+      "errors": []
+    },
+    {
+      "name": "invalid event type",
+      "patch": {
+        "eventType": "WEIGHING"
+      },
+      "errors": [
+        "INVALID_EVENT_TYPE"
+      ]
+    },
+    {
+      "name": "future timestamp",
+      "patch": {
+        "eventType": "CHECKUP",
+        "finding": "Sin hallazgos",
+        "fieldOccurredAt": "2026-11-21T15:00:00Z"
+      },
+      "errors": [
+        "FUTURE_TIMESTAMP"
+      ]
+    },
+    {
+      "name": "vaccination without product nor dose",
+      "patch": {
+        "eventType": "VACCINATION"
+      },
+      "errors": [
+        "PRODUCT_REQUIRED",
+        "DOSE_REQUIRED"
+      ]
+    },
+    {
+      "name": "deworming with blank product",
+      "patch": {
+        "eventType": "DEWORMING",
+        "product": "   ",
+        "doseQuantity": 1,
+        "doseUnit": "ml"
+      },
+      "errors": [
+        "PRODUCT_REQUIRED"
+      ]
+    },
+    {
+      "name": "zero dose",
+      "patch": {
+        "eventType": "VACCINATION",
+        "product": "Aftosa",
+        "doseQuantity": 0,
+        "doseUnit": "ml"
+      },
+      "errors": [
+        "DOSE_NOT_POSITIVE"
+      ]
+    },
+    {
+      "name": "negative dose",
+      "patch": {
+        "eventType": "VACCINATION",
+        "product": "Aftosa",
+        "doseQuantity": -2,
+        "doseUnit": "ml"
+      },
+      "errors": [
+        "DOSE_NOT_POSITIVE"
+      ]
+    },
+    {
+      "name": "dose without unit",
+      "patch": {
+        "eventType": "VACCINATION",
+        "product": "Aftosa",
+        "doseQuantity": 2
+      },
+      "errors": [
+        "DOSE_UNIT_REQUIRED"
+      ]
+    },
+    {
+      "name": "unknown dose unit",
+      "patch": {
+        "eventType": "VACCINATION",
+        "product": "Aftosa",
+        "doseQuantity": 2,
+        "doseUnit": "cc"
+      },
+      "errors": [
+        "DOSE_UNIT_REQUIRED"
+      ]
+    },
+    {
+      "name": "treatment without reason",
+      "patch": {
+        "eventType": "TREATMENT",
+        "product": "Oxitetraciclina",
+        "doseQuantity": 5,
+        "doseUnit": "ml"
+      },
+      "errors": [
+        "REASON_REQUIRED"
+      ]
+    },
+    {
+      "name": "checkup without finding",
+      "patch": {
+        "eventType": "CHECKUP"
+      },
+      "errors": [
+        "FINDING_REQUIRED"
+      ]
+    },
+    {
+      "name": "legacy vaccination without product is accepted",
+      "patch": {
+        "eventType": "VACCINATION",
+        "doseQuantity": 2,
+        "origin": "LEGACY"
+      },
+      "errors": []
+    },
+    {
+      "name": "legacy event still rejects future timestamp",
+      "patch": {
+        "eventType": "CHECKUP",
+        "origin": "LEGACY",
+        "fieldOccurredAt": "2026-11-22T14:00:00Z"
+      },
+      "errors": [
+        "FUTURE_TIMESTAMP"
+      ]
+    }
+  ]
+}
