@@ -18,7 +18,7 @@
 
 ## 4. Calidad y Ciberseguridad (DevSecOps)
 - Validación estricta de esquemas de entrada y salida mediante contratos tipados (Pydantic).
-- Control de acceso por roles (`OPERARIO` vs `VETERINARIO`).
+- Control de acceso por roles (`ADMINISTRADOR`, `OPERARIO`, `VETERINARIO`, `DIRECTIVO`) con mínimo privilegio: cada rol accede solo a las operaciones de su responsabilidad y a los datos de su finca activa.
 - Cero credenciales, tokens o claves quemadas en el repositorio.
 
 ## 5. Gobernanza Metodológica (Enfoque E2E: Lean-Kanban + SDD + DevSecOps + SRE)
