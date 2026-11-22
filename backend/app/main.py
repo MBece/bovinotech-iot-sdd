@@ -14,11 +14,24 @@ from app.features.sanitary_events.router import (
     router as sync_router,
 )
 from app.features.sinigan.router import router as sinigan_router
+from app.features.sinigan_sync.models import (  # noqa: F401
+    FieldAnimalRecord,
+    ReconciliationDiscrepancy,
+    ReconciliationResolution,
+    ReconciliationTicket,
+)
+from app.features.sinigan_sync.router import router as sinigan_sync_router
+from app.features.sinigan_sync.schema_migration import (
+    ensure_sinigan_sync_schema,
+)
+from app.features.sinigan_sync.service import seed_field_animals
 
-# Create tables and execute seed
+# Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
 ensure_auth_schema(engine)
+ensure_sinigan_sync_schema(engine)
 seed_initial_users()
+seed_field_animals()
 
 app = FastAPI(title="BovinoTech IoT API", version="1.0.0")
 
@@ -35,6 +48,11 @@ app.include_router(
     sinigan_router,
     prefix="/integrations/sinigan",
     tags=["SINIGAN simulado"],
+)
+app.include_router(
+    sinigan_sync_router,
+    prefix="/integrations/sinigan-sync",
+    tags=["Conciliación SINIGAN simulada"],
 )
 app.include_router(sync_router, prefix="/sync", tags=["Sincronización"])
 app.include_router(

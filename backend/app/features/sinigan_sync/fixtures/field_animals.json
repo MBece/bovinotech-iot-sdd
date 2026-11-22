@@ -1,0 +1,52 @@
+[
+  {
+    "din": "DIN-DEMO-000001",
+    "species": "BOVINO",
+    "sex": "HEMBRA",
+    "age_group": "ADULTO",
+    "sit_code": "SIT-DEMO-001",
+    "establishment_name": "Finca El Roble",
+    "source": "REGISTRO_DE_CAMPO",
+    "updated_at": "2026-11-20T12:00:00Z"
+  },
+  {
+    "din": "DIN-DEMO-000002",
+    "species": "BOVINO",
+    "sex": "HEMBRA",
+    "age_group": "JOVEN",
+    "sit_code": "SIT-DEMO-001",
+    "establishment_name": "Finca El Roble",
+    "source": "REGISTRO_DE_CAMPO",
+    "updated_at": "2026-11-20T12:05:00Z"
+  },
+  {
+    "din": "DIN-DEMO-000003",
+    "species": "BOVINO",
+    "sex": "HEMBRA",
+    "age_group": "ADULTO",
+    "sit_code": "SIT-DEMO-001",
+    "establishment_name": "Finca El Roble",
+    "source": "REGISTRO_DE_CAMPO",
+    "updated_at": "2026-11-20T12:10:00Z"
+  },
+  {
+    "din": "DIN-DEMO-000004",
+    "species": "BOVINO",
+    "sex": "MACHO",
+    "age_group": "ADULTO",
+    "sit_code": "SIT-DEMO-001",
+    "establishment_name": "Finca El Roble",
+    "source": "REGISTRO_DE_CAMPO",
+    "updated_at": "2026-11-20T12:15:00Z"
+  },
+  {
+    "din": "DIN-DEMO-000005",
+    "species": "BUFALINO",
+    "sex": "HEMBRA",
+    "age_group": "JOVEN",
+    "sit_code": "SIT-DEMO-002",
+    "establishment_name": "Hacienda La Esperanza",
+    "source": "REGISTRO_DE_CAMPO",
+    "updated_at": "2026-11-20T12:20:00Z"
+  }
+]
