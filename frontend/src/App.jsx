@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import { LoginForm } from './features/auth/LoginForm';
 import { authService } from './features/auth/authService';
 import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
+import { SiniganReconciliation } from './features/sinigan-sync/SiniganReconciliation';
 import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
 import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
 import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
@@ -82,6 +83,13 @@ function Dashboard() {
           role={role}
           selectedAnimal={selectedAnimal}
           refreshSignal={historyRefresh}
+        />
+
+        <SiniganReconciliation
+          key={user.farmId ?? 'sin-finca'}
+          token={user.token}
+          role={role}
+          farmId={user.farmId}
         />
 
         <div style={dashboardStyles.card}>

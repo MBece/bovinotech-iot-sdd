@@ -1,0 +1,155 @@
+{
+  "run_id": "HU05-SINIGAN-SYNC-20261121",
+  "protocol_version": "1.1",
+  "created_at_utc": "2026-11-21T21:48:22Z",
+  "approved_at_utc": "2026-11-21T21:45:00Z",
+  "updated_at_utc": "2026-11-22T19:38:24Z",
+  "update_note": "Actualizacion D10 (aislamiento por finca activa) sobre el run aprobado HU05-SINIGAN-SYNC-20261121. Se conserva la evidencia previa y se anexa la de D10.",
+  "approval_source": "Mensaje del usuario: 'Adelante, comenzamos' (aprobacion del plan consolidado y D1-D9). D10 se agrega por instruccion posterior del usuario con la implementacion ya aprobada.",
+  "objective": "Implementacion y revision multiagente de HU-05 (interoperabilidad simulada con SINIGAN V6 y conciliacion de conflictos), con evidencia auditable de especificacion, TDD, revision independiente y auditoria, incluyendo el aislamiento por finca activa D10 exigido por HU-01.",
+  "target": {
+    "repository": "MBece/bovinotech-iot-sdd",
+    "feature_branch": "feat/hu-05-sinigan-sync",
+    "base_branch": "main",
+    "base_sha": "a8138932c875a73a814f51242f011cf6d00a8398",
+    "observed_head_sha": "38096fe (origin/develop, incluye HU-01 auth/RBAC)",
+    "head_sha": "PENDING",
+    "worktree": "C:/Users/JUANGU~1/AppData/Local/Temp/opencode/wt-hu-05-sinigan-sync",
+    "module_scope": [
+      "backend/app/features/sinigan_sync/",
+      "backend/app/main.py (solo import/registro)",
+      "backend/tests/",
+      "frontend/src/features/sinigan-sync/",
+      "frontend/src/App.jsx (solo import/render)",
+      "specs/005-sinigan-sync/",
+      "docs/evidence/hu-05-sinigan-sync/",
+      ".opencode/agents/hu05-*.md"
+    ]
+  },
+  "orchestrator": {
+    "id": "A0",
+    "role": "Coordinacion, gates, triage, integracion y sellado de evidencia",
+    "model": "deepseek-v4.1-flash",
+    "context_policy": "A0 no implementa logica de negocio. Recibe entregables y salidas de gates; asigna correcciones a los agentes responsables."
+  },
+  "topology": [
+    { "id": "A1", "role": "Arquitecto", "phase": "P1", "mode": "read-only", "output": "docs/evidence/hu-05-sinigan-sync/agents/A1-architect.md" },
+    { "id": "A2", "role": "Analista funcional", "phase": "P1", "mode": "read-only", "output": "docs/evidence/hu-05-sinigan-sync/agents/A2-analyst.md" },
+    { "id": "A5", "role": "QA y aceptacion", "phase": "P2/P6", "mode": "tests/evidence", "output": "backend/tests/, docs/evidence/hu-05-sinigan-sync/acceptance/" },
+    { "id": "A3", "role": "Backend", "phase": "P3", "mode": "edit-scoped", "output": "backend/app/features/sinigan_sync/, backend/tests/" },
+    { "id": "A4", "role": "Frontend", "phase": "P4", "mode": "edit-scoped", "output": "frontend/src/features/sinigan-sync/" },
+    { "id": "A6A", "role": "Revisor de arquitectura", "phase": "P5", "mode": "read-only", "output": "docs/evidence/hu-05-sinigan-sync/reviews/A6A-architecture.md" },
+    { "id": "A6B", "role": "Revisor de codigo", "phase": "P5", "mode": "read-only", "output": "docs/evidence/hu-05-sinigan-sync/reviews/A6B-code.md" },
+    { "id": "A7", "role": "Auditor independiente", "phase": "P7", "mode": "read-only", "output": "docs/evidence/hu-05-sinigan-sync/REPORT.md" }
+  ],
+  "decisions": {
+    "D1": "Worktree aislado desde main; no se toca HU-02.",
+    "D2": "Registro de campo minimo ficticio, read-only, con seed idempotente.",
+    "D3": "Un ticket nuevo por cada comparacion con discrepancia.",
+    "D4": "Resolucion con decision + motivo; solo VETERINARIO; sin mutar datos.",
+    "D5": "Consulta para usuarios autenticados; resolucion solo VETERINARIO.",
+    "D6": "Spec en specs/005-sinigan-sync/.",
+    "D7": "Ejecucion multiagente con sesiones independientes opencode run --agent.",
+    "D8": "Etiqueta exacta visible en el nuevo panel.",
+    "D9": "Entorno local sin Docker.",
+    "D10": "Aislamiento de HU-05 por finca activa (claim farm_id de HU-01): farm_id NOT NULL e indexado en field_animal_records y reconciliation_tickets; din sigue unico global; sin finca activa 403 en las 4 rutas; 404/409 indistinguibles entre fincas; migracion SQLite idempotente con DEFAULT 1; seed en finca 1. Documentado en specs/005-sinigan-sync/decisions/D10-farm-isolation.md.",
+    "D11": "ADMINISTRADOR (y cualquier rol distinto de VETERINARIO) no puede resolver tickets: recibe 403 por require_veterinario. Deriva de D4/D5; verificado por sonda (A6A/A6B) pero sin test automatizado dedicado (M-06). No existe ADR D11 separado; la regla queda documentada en el ADR D10 (fuera de alcance) y en este manifiesto."
+  },
+  "severity_rubric": {
+    "Critical": "Sobrescritura de datos oficiales/campo, bypass de autenticacion, perdida de tickets o resoluciones.",
+    "High": "Incumplimiento de un criterio de aceptacion, resolucion sin motivo, ticket sin trazabilidad, escritura ante DIN inexistente.",
+    "Medium": "Caso borde relevante, error de autorizacion no explotable, inconsistencia de contrato o UX que induce a error.",
+    "Low": "Hardening, mensajes, accesibilidad, mantenibilidad."
+  },
+  "baseline": {
+    "environment": "Worktree aislado; backend ejecutado con Python 3.11.9; Node v22.19.0; npm 10.9.3",
+    "pytest": "20 passed, 1 warning",
+    "bandit": "0 Medium, 0 High, 4 Low; exit 0",
+    "eslint": "pass",
+    "build": "pass",
+    "recorded_at_utc": "2026-11-21T21:49:30Z",
+    "artifacts": "docs/evidence/hu-05-sinigan-sync/gates/G0-baseline/"
+  },
+  "phases": [
+    { "id": "G0", "name": "Baseline y congelamiento", "owner": "A0", "status": "done" },
+    { "id": "P1", "name": "Diagnostico y analisis", "owner": "A1/A2", "status": "done" },
+    { "id": "P2", "name": "TDD rojo", "owner": "A5", "status": "done" },
+    { "id": "P3", "name": "Implementacion backend", "owner": "A3", "status": "done" },
+    { "id": "P4", "name": "Implementacion frontend", "owner": "A4", "status": "done" },
+    { "id": "P5", "name": "Revision independiente", "owner": "A6A/A6B", "status": "done" },
+    { "id": "P6", "name": "QA y aceptacion", "owner": "A5", "status": "done" },
+    { "id": "G5", "name": "Aislamiento por finca (D10)", "owner": "A5/A0/A6A/A6B/A7", "status": "done" },
+    { "id": "P7", "name": "Auditoria final", "owner": "A7", "status": "done" }
+  ],
+  "agent_sessions": {
+    "A1": { "session_id": "ses_dfed67f64ffebN979DGWkCumMs", "report": "agents/A1-architect.md", "log": "agents/A1-architect.log.json", "exit_code": 0 },
+    "A2": { "session_id": "ses_dfed67f57ffeINo5NLjNwRAE0J", "report": "agents/A2-analyst.md", "log": "agents/A2-analyst.log.json", "exit_code": 0 },
+    "A5-red": { "session_id": "ses_dfed31597ffeZyo08n4Uk1kdzc", "report": "agents/A5-qa-red.md", "log": "agents/A5-qa-red.log.json", "exit_code": 0, "gate": "gates/G1-red/" },
+    "A3": { "session_id": "ses_dfecadf94ffeSklBg1nNX3FV0t", "report": "agents/A3-backend.md", "log": "agents/A3-backend.log.json", "exit_code": 0, "gate": "gates/G2-backend-green/" },
+    "A4": { "session_id": "ses_dfec242b7ffenRjBQM1edz6tuu", "report": "agents/A4-frontend.md", "log": "agents/A4-frontend.log.json", "exit_code": 0, "gate": "gates/G3-frontend-green/" },
+    "A5-full": { "session_id": "ses_dfebd9dc0ffeT8nNsdvtUzApVc", "report": "agents/A5-qa.md", "log": "agents/A5-qa-full.log.json", "exit_code": 0, "gate": "gates/G4-acceptance/" },
+    "A5-final-docs": { "session_id": "ses_dfeac8695ffed019bYZBTVQbY8", "report": "agents/A5-qa.md", "log": "agents/A5-qa-final-docs.log.json", "exit_code": 0 },
+    "A6A": { "session_id": "ses_dfea506a1ffeUYK2UhWLjKXXat", "report": "reviews/A6A-architecture.md", "log": "agents/A6A-architecture-review.log.json", "exit_code": 0, "verdict": "aprobar" },
+    "A6B": { "session_id": "ses_dfea506aaffeIV5y9MOs2c4Swg", "report": "reviews/A6B-code.md", "log": "agents/A6B-code-review.log.json", "exit_code": 0, "verdict": "aprobado con observaciones", "medium_findings": ["M-01", "M-02", "M-03"] },
+    "A3-fixes": { "session_id": "ses_dfe9cc620ffe0VMOkGVJip6KcL", "report": "agents/A3-backend-fixes.md", "log": "agents/A3-backend-fixes.log.json", "exit_code": 0 },
+    "A4-fixes": { "session_id": "ses_dfe9cc609ffe1TnTRZ7s0CGW5s", "report": "agents/A4-frontend-fixes.md", "log": "agents/A4-frontend-fixes.log.json", "exit_code": 0 },
+    "A6B-rereview": { "session_id": "ses_dfe97a902ffeid9H3WWBQS2w0D", "report": "reviews/A6B-code-rereview.md", "log": "agents/A6B-rereview.log.json", "exit_code": 0, "verdict": "aprobar", "medium_open": 0 },
+    "A5-final-update": { "session_id": "ses_dfe97a904ffexj08f64mFmeHHG", "report": "agents/A5-qa.md", "log": "agents/A5-final-evidence-update.log.json", "exit_code": 0 },
+    "A7": { "session_id": "ses_dfe92b1b0ffexEVwbrjYu9TDek", "report": "REPORT.md", "traceability": "traceability.md", "log": "agents/A7-audit-final.log.json", "exit_code": 0, "verdict": "APROBADO CON OBSERVACIONES" },
+    "A5-d10": { "session_id": "ses_dfb66ec65ffeRX2JQ9rEKuaB32", "report": "gates/G5-farm-isolation/qa-report.md", "log": null, "exit_code": null, "gate": "gates/G5-farm-isolation/", "evidence_status": "session_id declarado por A0; no existe log exportado en agents/ ni prompt D10 en prompts/. A7 no puede verificar la sesion." },
+    "A6A-d10": { "session_id": "ses_dfb5901dbffe80ZopwmbfbehIs", "report": "reviews/A6A-architecture-d10.md", "log": null, "exit_code": null, "verdict": "APROBADO CON OBSERVACIONES", "evidence_status": "session_id declarado por A0; informe transcrito por A0 tras agotar el limite de pasos de A6A. Sin log exportado." },
+    "A6B-d10": { "session_id": "ses_dfb5901dbffdt3NXZgPHZENHly", "report": "reviews/A6B-code-d10.md", "log": null, "exit_code": null, "verdict": "APROBADO CON OBSERVACIONES", "medium_findings": ["M-01", "M-02", "M-03", "M-04", "M-05", "M-06", "M-07", "M-08"], "evidence_status": "session_id declarado por A0; informe transcrito por A0 tras agotar el limite de pasos de A6B. Sin log exportado." }
+  },
+  "final": {
+    "head_sha": "PENDING (sin commit; working tree sobre origin/develop 38096fe, que incluye HU-01)",
+    "backend_tests": "122 passed, 1 warning (EXIT 0, re-ejecutado por A7)",
+    "frontend_node_tests": "20 passed, 3 suites, 0 fail (EXIT 0, re-ejecutado por A7)",
+    "lint": "pass (EXIT 0, re-ejecutado por A7)",
+    "build": "pass (EXIT 0, Vite 8.3.8, 38 modulos, re-ejecutado por A7)",
+    "e2e": "PASS (EXIT_CODE=0; incluye steps.d10FarmIsolation). Ejecutado por A0; auditado por A7 sobre evidencia cruda.",
+    "d10_backend_tests": "13 tests D10 recolectados: 2 contrato farm API, 5 unit farm scope, 3 migracion de esquema, 3 seguridad farm isolation",
+    "d10_e2e": "steps.d10FarmIsolation: vet2 finca 2 no ve el ticket, detalle 404, resolucion 404; finca 1 visible con farmId=1; tokenMaterialStored=false",
+    "medium_open": 8,
+    "medium_ids": ["M-01", "M-02", "M-03", "M-04", "M-05", "M-06", "M-07", "M-08"],
+    "verdict": "APROBADO CON OBSERVACIONES",
+    "traceability_conditions": [
+      "Los session_id D10 de A5/A6A/A6B no tienen log exportado en agents/ ni prompt D10 en prompts/; A7 no puede verificarlos. A0 debe anexar logs/prompts antes del merge.",
+      "Los informes A6A/A6B D10 declaran ser transcripciones de A0 tras agotar el limite de pasos de los revisores.",
+      "plan-approved.sha256 conserva el hash previo (3BC3216D...) del contrato; el contrato cambio legitimamente por D10 a 3BE12803... y el archivo de congelamiento debe regenerarse antes del merge."
+    ],
+    "audit_observations": [
+      "A7-D10-01: el briefing entregado a A7 afirma que data-model.md tiene hash 3BE12803...; el hash real es 6CDED92F... (3BE12803... es el hash del contrato). Se registra el hash calculado.",
+      "A7-D10-02: gates/G5-farm-isolation/a0-node-test.txt es una corrida fallida (MODULE_NOT_FOUND, EXIT_CODE=1) y a0-e2e-report.md la describe como 20 pass/0 fail. El artefacto canonico node-test.txt y la re-ejecucion de A7 dan 20/20 EXIT 0.",
+      "A7-D10-03: el resumen del run reporto 10 tests D10; la recoleccion real es 13 (2+5+3+3).",
+      "A7-D10-04: no existe ADR D11 separado; la regla 'ADMINISTRADOR no resuelve' deriva de D4/D5 y de require_veterinario, verificada por sonda, sin test dedicado (M-06)."
+    ],
+    "report": "docs/evidence/hu-05-sinigan-sync/REPORT.md",
+    "traceability": "docs/evidence/hu-05-sinigan-sync/traceability.md"
+  },
+  "artifacts": {
+    "spec": "specs/005-sinigan-sync/",
+    "manifest": "docs/evidence/hu-05-sinigan-sync/manifest.json",
+    "orchestrator_log": "docs/evidence/hu-05-sinigan-sync/orchestrator-log.md",
+    "agents": "docs/evidence/hu-05-sinigan-sync/agents/",
+    "gates": "docs/evidence/hu-05-sinigan-sync/gates/",
+    "d10_gate": "docs/evidence/hu-05-sinigan-sync/gates/G5-farm-isolation/",
+    "acceptance": "docs/evidence/hu-05-sinigan-sync/acceptance/",
+    "reviews": "docs/evidence/hu-05-sinigan-sync/reviews/",
+    "d10_reviews": [
+      "docs/evidence/hu-05-sinigan-sync/reviews/A6A-architecture-d10.md",
+      "docs/evidence/hu-05-sinigan-sync/reviews/A6B-code-d10.md"
+    ],
+    "findings": "docs/evidence/hu-05-sinigan-sync/findings/",
+    "report": "docs/evidence/hu-05-sinigan-sync/REPORT.md",
+    "traceability": "docs/evidence/hu-05-sinigan-sync/traceability.md",
+    "hashes": "docs/evidence/hu-05-sinigan-sync/sha256sums.txt"
+  },
+  "exclusions": [
+    "Sin commits, push ni PR sin autorizacion explicita.",
+    "No se modifica la HU-05, la constitucion ni modulos ajenos.",
+    "No se usa Docker ni se agregan dependencias.",
+    "No se mezcla evidencia de HU-02 ni de security-review-pr3.",
+    "Los agentes no se invocan entre si; la coordinacion es de A0.",
+    "No se declara un test verde sin salida cruda de ejecucion."
+  ]
+}

@@ -28,13 +28,42 @@ def override_get_db():
         db.close()
 
 
+def _seed_field_animals_if_available(db) -> bool:
+    """Seed HU-05 field records when the module under test exists.
+
+    During the TDD red phase ``app.features.sinigan_sync`` does not exist yet.
+    Swallowing only the absence of that module keeps the pre-existing suite
+    green while still seeding the same database through the real, shared
+    ``seed_field_animals`` function once A3 implements it.
+    """
+    try:
+        from app.features.sinigan_sync.service import seed_field_animals
+    except ModuleNotFoundError as exc:
+        if exc.name and exc.name.startswith("app.features.sinigan_sync"):
+            return False
+        raise
+    seed_field_animals(db)
+    return True
+
+
 @pytest.fixture(autouse=True)
 def isolated_database():
     Base.metadata.drop_all(bind=test_engine)
     Base.metadata.create_all(bind=test_engine)
     db = TestingSessionLocal()
     seed_initial_users(db)
+    field_animals_seeded = _seed_field_animals_if_available(db)
     db.close()
     app.dependency_overrides[get_db] = override_get_db
-    yield
+    yield field_animals_seeded
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def db_session(isolated_database):
+    """Provide a session bound to the isolated in-memory test database."""
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
