@@ -43,6 +43,9 @@ class OfflineSyncEvent(Base):
     author_verification_pending = Column(Boolean, nullable=False, default=False)
     author_verification_result = Column(String(16), nullable=True)
     requires_timestamp_review = Column(Boolean, nullable=False, default=False)
+    # Set by the server, never by the client: LEGACY events skip the FR-015
+    # required-field rules, so HU-04 must review their data (QA-01).
+    requires_data_review = Column(Boolean, nullable=False, default=False)
     batch_log_id = Column(Integer, index=True, nullable=True)
 
 

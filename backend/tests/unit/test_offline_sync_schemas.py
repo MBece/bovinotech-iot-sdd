@@ -57,6 +57,7 @@ def test_response_is_serialized_in_camel_case():
         "detail": "El servidor no pudo registrar el evento. Se reintentará.",
         "receivedAt": None,
         "requiresTimestampReview": False,
+        "requiresDataReview": False,
     }
 
 

@@ -24,6 +24,15 @@
 - **Qué**: en `frontend/package.json`, `"test": "node --test 'src/features/**/*.test.js'"`; en el job `frontend-build` de `.github/workflows/ci.yml`, el paso `npm test`.
 - **Por qué**: las 44 pruebas de `offline-sync` (más las de `offline-capture` y `sinigan-sync`) hoy solo corren en local. Es la misma solicitud que la §3 de la HU-02.
 
+## 4. Archivos de la HU-02 (`offline-capture`) tocados por la HU-03
+
+- **Responsable**: el mismo integrante de la HU-02 y la HU-03, así que no hace falta aprobación de otro equipo; se deja constancia por transparencia (auditoría QA-09).
+- **Qué se tocó y por qué**:
+  - `frontend/src/features/offline-capture/{pendingTrayModel.js, eventDetailModel.js, PendingTray.jsx, EventDetail.jsx}` y sus pruebas: punto de extensión opcional `syncLabelOf` para que la bandeja y el detalle muestren el estado real de sincronización (research R8, T046, T049). Si no se pasa, se conserva el comportamiento anterior.
+  - `backend/app/features/offline_capture/schemas.py` y `frontend/src/features/offline-capture/eventValidation.js` (+ pruebas): corrección de QA-01. Un evento `LEGACY` ya no queda exento de las reglas que no dependen de la antigüedad del dato (dosis > 0, unidad permitida, límites de longitud; `doseUnit` ≤ 16). Las reglas de obligatoriedad de FR-015 siguen sin aplicarse a `LEGACY`, como fija FR-019 de la HU-02, y los casos compartidos de `specs/002-offline-capture/contracts/captured-event.cases.json` siguen pasando sin cambios.
+- **Dependencia en ambos sentidos**: `offline-capture/PendingTray.jsx` importa de `offline-sync` y `offline-sync/syncServices.js` importa `offline-capture/captureServices.js`. Se acepta mientras ambos módulos sean del mismo integrante.
+- **`App.jsx`**: se unificaron en una sola línea las dos importaciones de `./features/offline-sync`.
+
 ## Estado
 
 | Solicitud | Estado |
@@ -31,3 +40,4 @@
 | 1. HU-04 lee `offline_sync_events` | Pendiente de aprobación |
 | 2. Retirar `/sync/batches` y la captura preliminar | Pendiente (pedido en la HU-02) |
 | 3. `npm test` en CI | Pendiente de aprobación |
+| 4. Archivos de la HU-02 tocados | Informativo (mismo integrante) |

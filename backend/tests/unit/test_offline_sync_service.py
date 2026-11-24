@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
 
+import pytest
 from sqlalchemy.exc import OperationalError
 
 from app.features.offline_sync.models import OfflineSyncEvent
@@ -98,9 +99,119 @@ def test_item_without_readable_id_is_reported_by_index(db_session):
 
 
 def test_legacy_event_without_product_is_synced(db_session):
+    # FR-019: the preliminary capture had no product nor dose unit, so the
+    # FR-015 required-field rules are not applied to LEGACY events. They are
+    # stored flagged for a server-side data review instead (QA-01).
     legacy = captured(eventType="VACCINATION", finding=None, origin="LEGACY", doseQuantity=2)
 
-    assert run(db_session, [legacy]).results[0].status == "SINCRONIZADO"
+    result = run(db_session, [legacy]).results[0]
+
+    assert result.status == "SINCRONIZADO"
+    assert result.requires_data_review is True
+    row = db_session.query(OfflineSyncEvent).one()
+    assert row.requires_data_review is True
+
+
+def test_regular_event_does_not_require_data_review(db_session):
+    result = run(db_session, [captured()]).results[0]
+
+    assert result.status == "SINCRONIZADO"
+    assert result.requires_data_review is False
+    assert db_session.query(OfflineSyncEvent).one().requires_data_review is False
+
+
+def test_legacy_treatment_without_product_dose_or_reason_is_flagged(db_session):
+    legacy = captured(eventType="TREATMENT", finding=None, origin="LEGACY")
+
+    result = run(db_session, [legacy]).results[0]
+
+    assert result.status == "SINCRONIZADO"
+    assert result.requires_data_review is True
+
+
+def _assert_rejected(db_session, item, code):
+    result = run(db_session, [item]).results[0]
+    assert result.status == "FALLIDO"
+    assert result.retryable is False
+    assert result.error_code.value == "VALIDATION_ERROR"
+    assert code in result.detail
+    assert db_session.query(OfflineSyncEvent).count() == 0
+
+
+def test_legacy_negative_dose_is_rejected(db_session):
+    legacy = captured(
+        eventType="VACCINATION", finding=None, origin="LEGACY", doseQuantity=-5, doseUnit="ml"
+    )
+    _assert_rejected(db_session, legacy, "DOSE_NOT_POSITIVE")
+
+
+def test_legacy_zero_dose_is_rejected(db_session):
+    legacy = captured(eventType="DEWORMING", finding=None, origin="LEGACY", doseQuantity=0)
+    _assert_rejected(db_session, legacy, "DOSE_NOT_POSITIVE")
+
+
+def test_legacy_unknown_dose_unit_is_rejected(db_session):
+    legacy = captured(
+        eventType="VACCINATION", finding=None, origin="LEGACY", doseQuantity=2, doseUnit="litros"
+    )
+    _assert_rejected(db_session, legacy, "DOSE_UNIT_REQUIRED")
+
+
+def test_legacy_very_long_dose_unit_is_rejected(db_session):
+    legacy = captured(
+        eventType="VACCINATION", finding=None, origin="LEGACY", doseQuantity=2, doseUnit="x" * 200
+    )
+    result = run(db_session, [legacy]).results[0]
+    assert result.status == "FALLIDO"
+    assert result.error_code.value == "VALIDATION_ERROR"
+    assert db_session.query(OfflineSyncEvent).count() == 0
+
+
+def test_very_long_dose_unit_without_dose_is_rejected_for_any_origin(db_session):
+    for origin in ("LEGACY", "OFFLINE_CAPTURE"):
+        item = captured(origin=origin, doseUnit="x" * 200)
+        result = run(db_session, [item]).results[0]
+        assert result.status == "FALLIDO", origin
+        assert "INVALID_FIELD" in result.detail
+    assert db_session.query(OfflineSyncEvent).count() == 0
+
+
+def test_legacy_notes_too_long_are_rejected(db_session):
+    legacy = captured(origin="LEGACY", notes="n" * 501)
+    _assert_rejected(db_session, legacy, "NOTES_TOO_LONG")
+
+
+def test_legacy_long_product_is_rejected(db_session):
+    legacy = captured(eventType="VACCINATION", origin="LEGACY", product="p" * 121)
+    _assert_rejected(db_session, legacy, "INVALID_FIELD")
+
+
+NON_FINITE_DOSES = ("NaN", "Infinity", "-Infinity", float("inf"), float("nan"))
+
+
+@pytest.mark.parametrize("dose", NON_FINITE_DOSES)
+@pytest.mark.parametrize("origin", ["OFFLINE_CAPTURE", "LEGACY"])
+def test_non_finite_dose_is_rejected(db_session, origin, dose):
+    """QA-11: NaN / Infinity must not bypass DOSE_REQUIRED or DOSE_NOT_POSITIVE."""
+    item = captured(
+        eventType="VACCINATION",
+        finding=None,
+        product="Aftosa bivalente",
+        origin=origin,
+        doseQuantity=dose,
+        doseUnit="ml",
+    )
+    _assert_rejected(db_session, item, "INVALID_FIELD")
+
+
+def test_duplicate_of_a_legacy_event_keeps_the_review_flag(db_session):
+    legacy = captured(origin="LEGACY")
+    run(db_session, [legacy])
+
+    result = run(db_session, [legacy]).results[0]
+
+    assert result.status == "DUPLICADO"
+    assert result.requires_data_review is True
 
 
 def test_states_and_author_flag_are_kept_as_received(db_session):

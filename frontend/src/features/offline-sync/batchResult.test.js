@@ -70,22 +70,39 @@ test('consecutive transient failures increase attempts and the wait', () => {
   const [event] = [capturedEvent(1)];
   const previous = new Map([[event.clientEventId, { client_event_id: event.clientEventId, status: 'failed', failure_kind: 'transient', attempts: 3 }]]);
 
-  const { states } = applyBatchResult([event], previous, { transportError: 'NETWORK' }, now, half);
+  const { states } = applyBatchResult([event], previous, { ok: false, status: 503, body: null }, now, half);
 
   assert.equal(states[0].attempts, 4);
   assert.equal(states[0].next_attempt_at, '2026-11-24T12:00:16.000Z');
 });
 
-test('network error and timeout make the whole batch transient and stop the run', () => {
+test('network error returns the batch to pending without consuming attempts (R9, FR-026)', () => {
   const events = [capturedEvent(1), capturedEvent(2)];
-  for (const transportError of ['NETWORK', 'TIMEOUT']) {
-    const { states, outcome } = applyBatchResult(events, new Map(), { transportError }, now, half);
-    assert.equal(outcome, 'offline');
-    assert.ok(states.every((state) => state.failure_kind === 'transient' && state.attempts === 1));
-    assert.equal(states[0].error_code, transportError);
-    assert.match(states[0].error_message, /Se reintentará/);
-  }
-  assert.equal(cases.network_error_whole_batch.expected_summary.failed_transient, 2);
+  const previous = new Map([[events[1].clientEventId, { client_event_id: events[1].clientEventId, status: 'failed', failure_kind: 'transient', attempts: 3, next_attempt_at: '2026-11-24T11:59:00.000Z' }]]);
+  const { states, outcome } = applyBatchResult(events, previous, { transportError: 'NETWORK' }, now, half);
+  assert.equal(outcome, 'offline');
+  assert.ok(states.every((state) => state.status === 'pending' && state.failure_kind === null));
+  assert.ok(states.every((state) => state.next_attempt_at === null), 'no backoff is scheduled');
+  assert.deepEqual(states.map((state) => state.attempts), [0, 3]);
+  assert.equal(cases.network_error_whole_batch.expected_summary.stop_reason, 'offline');
+});
+
+// QA-12: the server may be reachable but slow; resending every tick without
+// backoff would overload it and leave the operator with no visible reason.
+test('timeout is a transient failure with backoff and a visible reason (R9, FR-026, FR-028)', () => {
+  const events = [capturedEvent(1), capturedEvent(2)];
+  const previous = new Map([[events[1].clientEventId, { client_event_id: events[1].clientEventId, status: 'failed', failure_kind: 'transient', attempts: 3 }]]);
+  const { states, outcome } = applyBatchResult(events, previous, { transportError: 'TIMEOUT' }, now, half);
+  assert.equal(outcome, 'server_error');
+  assert.ok(states.every((state) => state.status === 'failed' && state.failure_kind === 'transient'));
+  assert.deepEqual(states.map((state) => state.attempts), [1, 4]);
+  assert.deepEqual(states.map((state) => state.next_attempt_at), ['2026-11-24T12:00:02.000Z', '2026-11-24T12:00:16.000Z']);
+  assert.ok(states.every((state) => state.error_code === 'TIMEOUT'));
+  assert.ok(states.every((state) => state.error_message === 'El servidor tardó demasiado en responder. Se reintentará.'));
+  const spec = cases.timeout_whole_batch;
+  assert.equal(spec.expected_summary.stop_reason, 'server_error');
+  assert.equal(spec.expected_local.error_code, 'TIMEOUT');
+  assert.equal(spec.expected_local.attempts, 1);
 });
 
 test('5xx and 429 make the whole batch transient', () => {
@@ -124,4 +141,30 @@ test('confirmation after retries resets attempts (FR-024)', () => {
   assert.equal(states[0].status, 'duplicate');
   assert.equal(states[0].attempts, 0);
   assert.equal(states[0].failure_kind, null);
+});
+
+const mismatchResponse = (event) =>
+  ok([
+    result(0, event, 'FALLIDO', { retryable: false, errorCode: 'AUTHOR_MISMATCH', detail: 'El evento pertenece a otro usuario y solo puede sincronizarlo su autor.' }),
+  ]);
+
+test('QA-02: AUTHOR_MISMATCH on an event of another author than the sender goes back to pending', () => {
+  const event = capturedEvent(1, { authorEmail: 'operario@bovinotech.co' });
+  const previous = new Map([[event.clientEventId, { client_event_id: event.clientEventId, status: 'failed', failure_kind: 'transient', attempts: 2 }]]);
+
+  const { states, outcome } = applyBatchResult([event], previous, mismatchResponse(event), now, half, { senderEmail: 'veterinario@bovinotech.co' });
+
+  assert.equal(outcome, 'ok');
+  assert.equal(states[0].status, 'pending');
+  assert.equal(states[0].failure_kind, null);
+  assert.equal(states[0].attempts, 2, 'no attempt is consumed');
+});
+
+test('AUTHOR_MISMATCH on an event sent by its own author stays a final failure', () => {
+  const event = capturedEvent(1, { authorEmail: 'operario@bovinotech.co' });
+
+  const { states } = applyBatchResult([event], new Map(), mismatchResponse(event), now, half, { senderEmail: 'operario@bovinotech.co' });
+
+  assert.equal(states[0].status, 'failed');
+  assert.equal(states[0].failure_kind, 'final');
 });

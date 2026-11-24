@@ -4,7 +4,9 @@
 // | 200, SINCRONIZADO / DUPLICADO    | synced / duplicate         | ok           |
 // | 200, FALLIDO retryable           | failed/transient, backoff  | ok           |
 // | 200, FALLIDO not retryable       | failed/final               | ok           |
-// | network error / timeout          | failed/transient (batch)   | offline      |
+// | 200, AUTHOR_MISMATCH, other user | pending, attempts kept     | ok           |
+// | network error                    | pending, attempts kept     | offline      |
+// | timeout (QA-12)                  | failed/transient (batch)   | server_error |
 // | 429 / 5xx                        | failed/transient (batch)   | server_error |
 // | 401 / 403                        | pending, attempts kept     | auth_paused  |
 // | 413 / 422                        | unchanged (engine splits)  | split        |
@@ -75,16 +77,32 @@ export const finalFailure = (event, previous, now, code, message) => ({
 const wholeBatch = (events, statusMap, now, make) =>
   events.map((event) => make(event, statusMap.get(event.clientEventId), now));
 
-/** Returns `{ states, outcome }` for `events` sent in this order. */
-export const applyBatchResult = (events, statusMap, response, now, random = Math.random) => {
-  if (response?.transportError) {
-    const code = response.transportError;
+// An AUTHOR_MISMATCH on an event whose author is not the sender only means it
+// went with another user's session: it waits, pending, for its author (QA-02).
+const sentByAnotherUser = (event, result, senderEmail) =>
+  result.errorCode === 'AUTHOR_MISMATCH' && senderEmail != null && event.authorEmail !== senderEmail;
+
+/**
+ * Returns `{ states, outcome }` for `events` sent in this order.
+ * `senderEmail` is the author of the session whose token sent the batch.
+ */
+export const applyBatchResult = (events, statusMap, response, now, random = Math.random, { senderEmail } = {}) => {
+  if (response?.transportError === 'TIMEOUT') {
+    // A timeout is not "no connection" (QA-12): the server may be reachable
+    // but slow. It consumes an attempt and waits with backoff, like a 5xx,
+    // so a slow server is not flooded and the operator sees why.
     return {
-      outcome: 'offline',
+      outcome: 'server_error',
       states: wholeBatch(events, statusMap, now, (event, previous) =>
-        transientFailure(event, previous, now, random, code, TRANSPORT_MESSAGES[code] ?? TRANSPORT_MESSAGES.NETWORK),
+        transientFailure(event, previous, now, random, 'TIMEOUT', TRANSPORT_MESSAGES.TIMEOUT),
       ),
     };
+  }
+  if (response?.transportError) {
+    // Losing the connection is not a failed attempt (R9, FR-026): back to
+    // pending, attempts kept and no backoff; the next run on reconnect
+    // resends the batch and idempotency resolves what the server stored.
+    return { outcome: 'offline', states: wholeBatch(events, statusMap, now, baseState) };
   }
 
   if (!response?.ok) {
@@ -109,6 +127,9 @@ export const applyBatchResult = (events, statusMap, response, now, random = Math
     const result = results.find((item) => item.index === index);
     if (result?.status === 'SINCRONIZADO') return confirmed(event, previous, result, now, SYNC_STATE.SYNCED);
     if (result?.status === 'DUPLICADO') return confirmed(event, previous, result, now, SYNC_STATE.DUPLICATE);
+    if (result?.status === 'FALLIDO' && sentByAnotherUser(event, result, senderEmail)) {
+      return baseState(event, previous, now);
+    }
     if (result?.status === 'FALLIDO' && result.retryable === false) {
       return finalFailure(event, previous, now, result.errorCode, result.detail);
     }

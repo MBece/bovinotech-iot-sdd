@@ -11,8 +11,7 @@ import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
 import { UserAdminPanel } from './features/auth/UserAdminPanel';
 import { roleInfo } from './features/auth/roles';
 import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
-import { OfflineSyncProvider } from './features/offline-sync';
-import { SyncNowButton, SyncStatusBadge } from './features/offline-sync';
+import { OfflineSyncProvider, SyncNowButton, SyncStatusBadge } from './features/offline-sync';
 import './App.css';
 
 function Dashboard() {

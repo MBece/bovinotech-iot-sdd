@@ -7,6 +7,11 @@ Guía para comprobar de extremo a extremo que la sincronización cumple la spec.
 - HU-01 y HU-02 fusionadas en la rama (R1): deben existir `backend/app/features/offline_capture/` y `frontend/src/features/offline-capture/`.
 - Python 3.11 con `backend/requirements.txt` instalado; Node 20.
 - Usuario semilla `OPERARIO` de la HU-01 con al menos una finca asignada.
+- **Base local creada antes de la corrección QA-01**: ya no hace falta borrarla. La tabla `offline_sync_events` ganó la columna `requires_data_review` y `create_all` no añade columnas a una tabla existente, pero al arrancar el backend `ensure_offline_sync_schema` (`backend/app/features/offline_sync/schema_migration.py`, invocada desde `main.py`) la añade en sitio con `ALTER TABLE ... ADD COLUMN requires_data_review BOOLEAN NOT NULL DEFAULT 0` (QA-13). Es una migración de esquema: las filas existentes toman el valor por defecto y no se modifican. Para comprobarlo:
+
+  ```bash
+  sqlite3 backend/bovinotech.db "PRAGMA table_info(offline_sync_events);" | grep requires_data_review
+  ```
 
 ## 1. Pruebas automatizadas
 
@@ -19,7 +24,7 @@ pytest                      # suite completa: sin regresiones y en menos de 90 s
 bandit -r app -ll           # sin hallazgos nuevos
 
 # Frontend (desde frontend/)
-node --test 'src/features/offline-sync/*.test.js'
+node --test 'src/features/offline-sync/*.test.js' 'src/features/offline-capture/*.test.js'
 npm run lint
 npm run build
 ```
@@ -62,12 +67,16 @@ Resultados esperados:
         FROM offline_sync_batch_log ORDER BY id DESC LIMIT 5;"
    ```
 
-8. **Fallo transitorio**: detener el backend con eventos pendientes y pulsar "Sincronizar ahora".
-   - Los eventos pasan a "Fallido" con un motivo transitorio y la hora aproximada del próximo intento (FR-028).
+8. **Servidor inalcanzable**: detener el backend con eventos pendientes y pulsar "Sincronizar ahora".
+   - Los eventos siguen "Pendiente": perder la conexión no cuenta como intento ni programa espera (R9, FR-026, QA-07).
    - Al relanzar el backend se confirman solos, sin pulsar nada.
+   - El estado "Fallido" transitorio con motivo y hora del próximo intento (FR-028) aparece ante 429/5xx o `STORAGE_BUSY`; lo cubren las pruebas automatizadas (`batchResult.test.js`, `syncEngine.test.js` AC4).
 9. **Sesión vencida**: borrar el token del almacenamiento y reconectar con eventos pendientes.
    - El envío se pausa y los eventos siguen "Pendiente", no "Fallido".
    - Tras iniciar sesión se envían solos (FR-020).
+9b. **Cambio de usuario durante el envío** (QA-02): con más de 50 eventos pendientes del `OPERARIO` y *throttling* "Slow 3G", pulsar "Sincronizar ahora", cerrar sesión e iniciarla como `VETERINARIO` mientras sale el primer lote.
+   - En DevTools ninguna petición con eventos del operario lleva el token del veterinario.
+   - Los eventos del operario no enviados siguen "Pendiente" (ninguno "Fallido") y se envían cuando el operario vuelve a iniciar sesión.
 10. **Captura sin bloqueo**: con 1.000 eventos generados por `devSeed` (HU-02) y la sincronización en curso, guardar un evento nuevo tarda menos de 2 s (SC-008).
 11. **Móvil**: con la vista a 375 px, el botón "Sincronizar ahora" y el acceso al detalle de fallidos miden al menos 48×48 px y los estados se leen como texto, no solo por color.
 

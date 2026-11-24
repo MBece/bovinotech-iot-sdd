@@ -69,3 +69,38 @@ test('every error code has a Spanish message', () => {
   }
   assert.equal(ERROR_MESSAGES.ANIMAL_NOT_IN_CATALOG, 'El animal no existe en el catálogo de esta finca.');
 });
+
+// HU-03 QA-01: `origin` is declared by the client, so LEGACY only skips the
+// required-field rules; the rules that do not depend on the data age apply.
+test('legacy event with a non-positive dose is rejected', () => {
+  for (const doseQuantity of [-5, 0]) {
+    const event = build({ eventType: 'VACCINATION', origin: 'LEGACY', doseQuantity, doseUnit: 'ml' });
+    assert.deepEqual(validateCapturedEvent(event, { now }), ['DOSE_NOT_POSITIVE']);
+  }
+});
+
+test('legacy event with a unit outside the allowed units is rejected', () => {
+  for (const doseUnit of ['litros', 'x'.repeat(200)]) {
+    const event = build({ eventType: 'VACCINATION', origin: 'LEGACY', doseQuantity: 2, doseUnit });
+    assert.deepEqual(validateCapturedEvent(event, { now }), ['DOSE_UNIT_REQUIRED']);
+  }
+});
+
+test('legacy event keeps tolerating the missing product, unit, reason and finding', () => {
+  for (const eventType of ['VACCINATION', 'TREATMENT', 'CHECKUP']) {
+    const event = build({ eventType, origin: 'LEGACY', doseQuantity: eventType === 'CHECKUP' ? null : 2 });
+    assert.deepEqual(validateCapturedEvent(event, { now }), [], eventType);
+  }
+});
+
+// HU-03 QA-11: a non-finite dose is never valid. The server rejects it as a
+// type error (INVALID_FIELD); the device shows it next to the dose field.
+test('non-finite dose is rejected for any origin', () => {
+  const doses = [Infinity, -Infinity, NaN, 'Infinity', 'NaN', '1e400', Number('1e400')];
+  for (const origin of ['OFFLINE_CAPTURE', 'LEGACY']) {
+    for (const doseQuantity of doses) {
+      const event = build({ eventType: 'VACCINATION', product: 'Aftosa', origin, doseQuantity, doseUnit: 'ml' });
+      assert.deepEqual(validateCapturedEvent(event, { now }), ['DOSE_NOT_POSITIVE'], `${origin} ${doseQuantity}`);
+    }
+  }
+});

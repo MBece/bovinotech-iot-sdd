@@ -25,6 +25,7 @@ EVENT_TYPES = ("VACCINATION", "TREATMENT", "CHECKUP", "DEWORMING")
 DOSE_UNITS = ("ml", "mg", "g", "unidades")
 PRODUCT_TYPES = {"VACCINATION", "DEWORMING", "TREATMENT"}
 NOTES_MAX_LENGTH = 500
+DOSE_UNIT_MAX_LENGTH = 16
 # The server clock tolerates small device skew (contracts/captured-event.md).
 SERVER_FUTURE_TOLERANCE = timedelta(minutes=5)
 
@@ -69,8 +70,12 @@ class CapturedEvent(BaseModel):
     din: str = Field(min_length=1, max_length=32)
     field_occurred_at: datetime
     product: str | None = Field(default=None, max_length=120)
-    dose_quantity: float | None = None
-    dose_unit: str | None = None
+    # NaN / Infinity (also 1e400, which overflows to inf) are type errors, so
+    # they surface as INVALID_FIELD and never skip DOSE_REQUIRED or
+    # DOSE_NOT_POSITIVE (HU-03 QA-11).
+    dose_quantity: float | None = Field(default=None, allow_inf_nan=False)
+    # Longest allowed unit is "unidades"; 16 matches the stored column.
+    dose_unit: str | None = Field(default=None, max_length=DOSE_UNIT_MAX_LENGTH)
     reason: str | None = Field(default=None, max_length=500)
     finding: str | None = Field(default=None, max_length=500)
     notes: str | None = None
@@ -119,9 +124,13 @@ def rule_violations(
     if event.event_type not in EVENT_TYPES:
         codes.append("INVALID_EVENT_TYPE")
 
-    # Legacy events keep what the preliminary capture stored (FR-019).
-    if event.origin != "LEGACY" and event.event_type in EVENT_TYPES:
-        if event.event_type in PRODUCT_TYPES:
+    if event.event_type in EVENT_TYPES:
+        # Legacy events keep what the preliminary capture stored (FR-019): it
+        # had no product, unit, reason nor finding, so the required-field
+        # rules are skipped. ``origin`` is declared by the client, so the rules
+        # that do not depend on the age of the data still apply (HU-03 QA-01).
+        legacy = event.origin == "LEGACY"
+        if not legacy and event.event_type in PRODUCT_TYPES:
             if _blank(event.product):
                 codes.append("PRODUCT_REQUIRED")
             if event.dose_quantity is None:
@@ -129,11 +138,12 @@ def rule_violations(
         if event.dose_quantity is not None:
             if event.dose_quantity <= 0:
                 codes.append("DOSE_NOT_POSITIVE")
-            if event.dose_unit not in DOSE_UNITS:
+            unit_missing_but_tolerated = legacy and event.dose_unit is None
+            if event.dose_unit not in DOSE_UNITS and not unit_missing_but_tolerated:
                 codes.append("DOSE_UNIT_REQUIRED")
-        if event.event_type == "TREATMENT" and _blank(event.reason):
+        if not legacy and event.event_type == "TREATMENT" and _blank(event.reason):
             codes.append("REASON_REQUIRED")
-        if event.event_type == "CHECKUP" and _blank(event.finding):
+        if not legacy and event.event_type == "CHECKUP" and _blank(event.finding):
             codes.append("FINDING_REQUIRED")
 
     if event.notes is not None and len(event.notes) > NOTES_MAX_LENGTH:

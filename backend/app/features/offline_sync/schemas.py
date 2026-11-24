@@ -61,6 +61,7 @@ class SyncItemResult(_CamelModel):
     detail: str | None = None
     received_at: datetime | None = None
     requires_timestamp_review: bool = False
+    requires_data_review: bool = False
 
 
 class SyncBatchResponse(_CamelModel):

@@ -34,11 +34,13 @@ from app.features.offline_sync.models import (  # noqa: F401
     OfflineSyncIdConflict,
 )
 from app.features.offline_sync.router import router as offline_sync_router
+from app.features.offline_sync.schema_migration import ensure_offline_sync_schema
 
 # Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
 ensure_auth_schema(engine)
 ensure_sinigan_sync_schema(engine)
+ensure_offline_sync_schema(engine)
 seed_initial_users()
 seed_field_animals()
 seed_catalog()

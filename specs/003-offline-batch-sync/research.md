@@ -90,7 +90,10 @@ Cada resultado incluye su `index` en el lote. Si un elemento no trae un `clientE
 | 401 | Pausa por sesión (FR-020): no cuenta como intento ni marca fallos |
 | 403 por rol (`DIRECTIVO`/`ADMINISTRADOR`) o contraseña pendiente de cambio | Pausa por sesión con aviso. No marca fallos definitivos: el usuario puede volver con la cuenta correcta |
 | 413 / 422 de estructura del lote | Error del cliente: se registra en el diagnóstico y el lote se reintenta partido en mitades hasta aislar el evento problemático, que queda definitivo |
-| 429 / 5xx / tiempo agotado (30 s) / error de red | Transitorio para todos los eventos del lote |
+| 429 / 5xx | Transitorio para todos los eventos del lote (incrementa `attempts` y programa espera) |
+| Error de red (`NETWORK`) | Sin conexión: el lote vuelve a `pending` sin incrementar `attempts` ni programar espera (R9, FR-005, FR-026). Al reconectar se reenvía y la idempotencia resuelve lo que ya se guardó. *Alineado tras la auditoría QA-07* |
+| Tiempo agotado (30 s, `TIMEOUT`) | El servidor puede estar accesible pero lento: el lote completo pasa a `failed/transient` con `error_code: TIMEOUT`, motivo visible "El servidor tardó demasiado en responder. Se reintentará." (FR-028), `attempts + 1` y espera exponencial (R9), igual que un 5xx. La ejecución termina con `stop_reason: server_error`. Reenviar sin espera saturaría aún más un servidor lento. La idempotencia resuelve lo que el servidor sí llegó a guardar. *Corregido tras la auditoría QA-12* |
+| `FALLIDO` `AUTHOR_MISMATCH` sobre un evento cuyo autor no es el de la sesión que lo envió | Vuelve a `pending` para enviarse con la sesión de su autor (defensa de QA-02) |
 
 **Razón**: separar "el servidor dijo que no" (definitivo) de "no hubo respuesta fiable" (transitorio) es lo que garantiza que ningún evento se pierda ni se abandone (FR-021 a FR-023).
 
@@ -157,7 +160,8 @@ delay = base × (0.5 + random())      # random() ∈ [0, 1) → variación de ±
 
 - El contador `attempts` es por evento. Se reinicia al confirmarse (FR-024).
 - `nextAttemptAt = now + delay` se guarda en `queue_state`.
-- Al perder la conexión, no se programan intentos ni se incrementa `attempts` (FR-026). Al recuperarla, se envían los eventos con `nextAttemptAt` vencido.
+- Al perder la conexión (error de red), no se programan intentos ni se incrementa `attempts` (FR-026). Al recuperarla, se envían los eventos con `nextAttemptAt` vencido.
+- Un tiempo agotado **no** cuenta como pérdida de conexión: es un fallo transitorio que incrementa `attempts` y programa `nextAttemptAt`, como un 5xx (QA-12).
 - "Sincronizar ahora" ignora `nextAttemptAt` (FR-002), pero respeta la ejecución única (R10).
 - Los eventos de un mismo lote fallido comparten `attempts`, pero cada uno recibe su propio sorteo de variación.
 

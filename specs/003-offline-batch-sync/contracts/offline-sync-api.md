@@ -54,7 +54,8 @@ Recibe un lote de eventos capturados offline (HU-02) y devuelve un resultado por
       "errorCode": null,
       "detail": null,
       "receivedAt": "2026-11-24T15:02:11Z",
-      "requiresTimestampReview": false
+      "requiresTimestampReview": false,
+      "requiresDataReview": false
     },
     {
       "index": 1,
@@ -64,7 +65,8 @@ Recibe un lote de eventos capturados offline (HU-02) y devuelve un resultado por
       "errorCode": null,
       "detail": "El evento ya estaba registrado en el servidor.",
       "receivedAt": "2026-11-24T14:10:03Z",
-      "requiresTimestampReview": false
+      "requiresTimestampReview": false,
+      "requiresDataReview": false
     },
     {
       "index": 2,
@@ -74,7 +76,8 @@ Recibe un lote de eventos capturados offline (HU-02) y devuelve un resultado por
       "errorCode": "STORAGE_BUSY",
       "detail": "El servidor no pudo registrar el evento. Se reintentará.",
       "receivedAt": null,
-      "requiresTimestampReview": false
+      "requiresTimestampReview": false,
+      "requiresDataReview": false
     }
   ]
 }
@@ -113,6 +116,7 @@ Recibe un lote de eventos capturados offline (HU-02) y devuelve un resultado por
 2. Un evento ya registrado nunca se actualiza ni se borra (append-only, FR-016).
 3. `fieldOccurredAt` se guarda tal cual. `receivedAt` es la hora del servidor (FR-015).
 4. Más de 5 min en el futuro → se registra con `requiresTimestampReview: true` (FR-017b).
+4b. `origin: "LEGACY"` no exime de las reglas que no dependen de la antigüedad del dato: dosis > 0, unidad permitida cuando hay dosis y unidad, y límites de longitud (`doseUnit` ≤ 16). Si las cumple, se registra con `requiresDataReview: true` para que la HU-04 revise sus datos; el resto de eventos lleva `requiresDataReview: false`. El valor lo fija siempre el servidor: un `requiresDataReview` enviado en un item se ignora (QA-01).
 5. El fallo de un evento no afecta a los demás del lote (FR-014).
 6. Cada petición deja una fila en `offline_sync_batch_log` (FR-029).
 
@@ -138,7 +142,9 @@ Funciones puras (se prueban con `node --test`):
 | `computeRetryDelay` | `(attempt, random) → ms` (R9) |
 | `selectDueEvents` | `(events, statusMap, now, { manual }) → events[]`, ordenados por captura (R11) |
 | `chunkBatches` | `(events, size = 50) → events[][]` |
-| `applyBatchResult` | `(queueStates, response \| transportError, now, random) → queueStates` (R5) |
+| `applyBatchResult` | `(events, statusMap, response \| transportError, now, random, { senderEmail }) → { states, outcome }` (R5). Un corte de red (`NETWORK`) deja el lote en `pending` sin incrementar `attempts` ni programar espera (R9, FR-026, QA-07). Un tiempo agotado (`TIMEOUT`) es un fallo transitorio con `error_code: TIMEOUT`, `attempts + 1` y espera, y el desenlace es `server_error` (QA-12). Un `AUTHOR_MISMATCH` sobre un evento cuyo autor no es `senderEmail` vuelve a `pending` en lugar de quedar definitivo (QA-02) |
+| `createSyncTransport().send` | `(items, token)`: usa el token de la sesión con la que arrancó la ejecución; no hay token global (QA-02) |
+| `engine.runSync` | `({ session, trigger, manual, isCurrent })`: si `isCurrent()` deja de ser verdadero entre lotes, la ejecución termina con `stop_reason: 'session_changed'` y los eventos no enviados quedan intactos (QA-02) |
 | `recoverInterrupted` | `(queueStates) → queueStates` (`syncing` → `pending`) |
 
 ---

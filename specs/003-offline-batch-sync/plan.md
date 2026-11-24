@@ -133,6 +133,7 @@ frontend/src/features/offline-sync/
 ├── syncLock.js               # Web Locks con respaldo en memoria (R10)
 ├── connectivity.js           # evento online + sonda /health (R10)
 ├── syncTransport.js          # POST /offline-sync/batches con tiempo máximo de 30 s
+├── syncWiring.js             # Une motor, transporte y controlador sin globales del navegador; el token viaja con cada ejecución (QA-02)
 ├── syncStateRepository.js    # IndexedDB queue_state + runs (almacenamiento inyectable)
 ├── syncStateLabels.js        # describeSyncState: textos en español (UI-003)
 └── *.test.js                 # node --test
@@ -174,6 +175,18 @@ frontend/src/App.jsx  # <OfflineSyncProvider> alrededor del Dashboard; <SyncStat
 8. **Frontend: interfaz**: `OfflineSyncProvider`, `SyncStatusBadge`, `SyncNowButton` y `FailedEventDetail`; registro en `App.jsx`.
 9. **Coordinación**: redactar `coordination.md` con las solicitudes del Seguimiento de Complejidad.
 10. **Validación**: `pytest`, `bandit`, `node --test 'src/features/offline-sync/*.test.js'`, `npm run lint`, `npm run build` y [quickstart.md](quickstart.md). Sin `git push` ni PR (modo de pruebas locales, CLAUDE.md).
+
+## Riesgos aceptados (auditoría QA)
+
+Hallazgos del [informe de qa-seguridad](qa-report.md) que no se corrigen en esta HU. QA-01, QA-02, QA-06, QA-07 y QA-09 sí se corrigieron (tareas T055 a T062), y QA-11, QA-12 y QA-13 en la re-verificación (tareas T064 a T072).
+
+| Hallazgo | Qué es | Por qué se acepta en esta HU |
+|---|---|---|
+| QA-03 (Baja) | Si el `clientEventId` ya existe en la tabla preliminar `sanitary_events`, se responde `DUPLICADO` sin comparar autor ni contenido | Los UUID son aleatorios (colisión accidental despreciable) y el camino preliminar está en retirada ([coordination.md](coordination.md) §2). Comparar contra un esquema ajeno y con menos campos añade lógica que se borrará con esa retirada |
+| QA-04 (Baja) | Un usuario deshabilitado con un token emitido antes de la deshabilitación puede sincronizar eventos retrofechados (`fieldOccurredAt < disabled_at`), porque esa hora la pone el dispositivo | Es la consecuencia conocida de R7: usar `was_user_active_at` rechazaría el corte de 24 h (SC-001). El token caduca y la detección de relojes manipulados está fuera de alcance (spec, Supuestos). La HU-04 valida todos los eventos antes de darlos por buenos |
+| QA-05 (Baja) | Por evento solo se capturan `IntegrityError` y `OperationalError`; otra excepción (p. ej. `DataError` en PostgreSQL) abortaría todo el lote con un 500 | La vía concreta (unidad de dosis de más de 16 caracteres) quedó cerrada por QA-01: el esquema limita `doseUnit` a 16 y los demás textos ya tenían límite. En SQLite no se manifiesta. Queda para el endurecimiento previo a migrar a un motor estricto |
+| QA-08 (Info) | `authorVerificationPending` lo declara el cliente; si un cliente modificado envía `false`, el evento no se marca para verificar autor | El servidor no puede conocer el estado de la sesión offline en el momento de la captura: es una limitación inherente al modelo offline, no un defecto de esta HU. El autor siempre se comprueba contra el token (`AUTHOR_MISMATCH`) |
+| QA-14 (Info) | Si otro usuario inicia sesión mientras sale el **último** lote del anterior (`queue_empty`) o un lote que acaba en `auth_paused`, `offline` o `server_error`, el controlador no relanza la sincronización para la sesión nueva; sus eventos esperan al siguiente tic del temporizador (≤ 30 s) | No hay pérdida, duplicados ni fallos definitivos: los eventos de la sesión nueva quedan `pending` y salen en el siguiente tic. El retraso máximo (30 s) cabe en SC-004. La corrección (relanzar siempre que cambie la sesión, sea cual sea `stop_reason`) es opcional según el propio informe y se deja para una mejora del controlador |
 
 ## Registro de Complejidad y Excepciones (Seguimiento de Complejidad)
 
