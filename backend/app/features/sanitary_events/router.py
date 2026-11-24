@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.features.auth.models import User
-from app.features.auth.router import get_current_user, require_veterinario
+from app.features.auth.router import (
+    get_current_user,
+    require_veterinario,
+    require_write_access,
+)
 from app.features.sanitary_events.models import SanitaryEvent
 from app.features.sanitary_events.schemas import (
     EventCorrectionRequest,
@@ -28,7 +32,7 @@ sync_service = SanitaryEventSyncService(sinigan_service.adapter)
 )
 def sync_batch(
     batch: SyncBatchRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_write_access),
     db: Session = Depends(get_db),
 ):
     return {"results": sync_service.process_batch(batch, current_user, db)}
@@ -72,7 +76,11 @@ def create_correction(
         field_occurred_at=correction.field_occurred_at,
         received_at=correction.created_at,
         author_email=correction.author_email,
+        product=correction.product,
         dose=correction.dose,
+        dose_unit=correction.dose_unit,
+        clinical_reason=correction.clinical_reason,
+        finding=correction.finding,
         notes=correction.notes,
         reason=correction.reason,
         validation_status="CORREGIDO",

@@ -188,7 +188,7 @@ def list_audit(
 
 @router.get("/test-vet-only")
 def test_vet_only(current_user: User = Depends(require_veterinario)):
-    return {"message": "Welcome Veterinarian"}
+    return {"message": "Acceso veterinario concedido"}
 
 
 @router.get("/test-directive-costs")

@@ -15,7 +15,7 @@ import { OfflineSyncProvider, SyncNowButton, SyncStatusBadge } from './features/
 import './App.css';
 
 function Dashboard() {
-  const { user, role, logout } = useAuth();
+  const { user, role, logout, canCapture } = useAuth();
   const [testMessage, setTestMessage] = useState(null);
   const [testError, setTestError] = useState(null);
   const [loadingTest, setLoadingTest] = useState(false);
@@ -73,13 +73,25 @@ function Dashboard() {
 
         <div style={dashboardStyles.workflowGrid}>
           <SiniganAnimalLookup token={user.token} onAnimalSelected={setSelectedAnimal} />
-          <OfflineSanitaryCapture
-            token={user.token}
-            userEmail={user.email}
-            selectedAnimal={selectedAnimal}
-            onSynchronized={() => setHistoryRefresh((value) => value + 1)}
-          />
-          <OfflineCapturePanel />
+          {canCapture ? (
+            <>
+              <OfflineSanitaryCapture
+                token={user.token}
+                userEmail={user.email}
+                selectedAnimal={selectedAnimal}
+                onSynchronized={() => setHistoryRefresh((value) => value + 1)}
+              />
+              <OfflineCapturePanel />
+            </>
+          ) : (
+            <section style={dashboardStyles.card} aria-labelledby="readonly-title">
+              <h2 id="readonly-title">Consulta de solo lectura</h2>
+              <p>
+                Su rol no puede registrar ni sincronizar eventos sanitarios. Puede consultar
+                animales e historiales dentro de su finca activa.
+              </p>
+            </section>
+          )}
         </div>
 
         <SanitaryHistory
@@ -90,12 +102,14 @@ function Dashboard() {
           refreshSignal={historyRefresh}
         />
 
-        <SiniganReconciliation
-          key={user.farmId ?? 'sin-finca'}
-          token={user.token}
-          role={role}
-          farmId={user.farmId}
-        />
+        {['VETERINARIO', 'ADMINISTRADOR'].includes(role) && (
+          <SiniganReconciliation
+            key={user.farmId ?? 'sin-finca'}
+            token={user.token}
+            role={role}
+            farmId={user.farmId}
+          />
+        )}
 
         <div style={dashboardStyles.card}>
           <h2>Control de acceso por roles</h2>
