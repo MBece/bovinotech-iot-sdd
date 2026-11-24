@@ -124,3 +124,15 @@ def test_resend_with_changes_leaves_the_original_row_intact(db_session):
 
     row = db_session.query(OfflineSyncEvent).one()
     assert row.finding == "Sin hallazgos"
+
+
+def test_client_cannot_set_its_own_validation_status(db_session):
+    """Validation belongs to HU-04: the server always stores the initial state."""
+    event = {**captured(), "validationStatus": "VALIDADO"}
+
+    result = client.post(
+        BATCHES_PATH, json={"items": [event]}, headers=login("operario@bovinotech.co")
+    ).json()["results"][0]
+
+    assert result["status"] == "SINCRONIZADO"
+    assert db_session.query(OfflineSyncEvent).one().validation_status == "PENDIENTE_VALIDACION"

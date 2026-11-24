@@ -36,6 +36,9 @@ from app.features.offline_sync.schemas import (
 )
 
 
+INITIAL_VALIDATION_STATUS = "PENDIENTE_VALIDACION"
+
+
 def _utc(value: datetime | None) -> datetime | None:
     if value is None:
         return None
@@ -115,7 +118,9 @@ class _BatchProcessor:
                 author_email=event.author_email,
                 farm_id=event.farm_id,
                 origin=event.origin,
-                validation_status=event.validation_status,
+                # Workflow state is never taken from the client: validation
+                # transitions belong to HU-04 (FR-018).
+                validation_status=INITIAL_VALIDATION_STATUS,
                 author_verification_pending=event.author_verification_pending,
                 author_verification_result=author_verification_result(self.user, event),
                 requires_timestamp_review=review,
