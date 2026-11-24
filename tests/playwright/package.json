@@ -1,0 +1,16 @@
+{
+  "name": "hu05-playwright-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:qa": "npx playwright test --config=playwright.qa.config.js",
+    "test:security": "npx playwright test --config=playwright.security.config.js",
+    "test:all": "npx playwright test --config=playwright.qa.config.js && npx playwright test --config=playwright.security.config.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3"
+  }
+}

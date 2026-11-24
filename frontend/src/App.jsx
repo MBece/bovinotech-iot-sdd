@@ -10,6 +10,8 @@ import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
 import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
 import { UserAdminPanel } from './features/auth/UserAdminPanel';
 import { roleInfo } from './features/auth/roles';
+import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
+import { OfflineSyncProvider, SyncNowButton, SyncStatusBadge } from './features/offline-sync';
 import './App.css';
 
 function Dashboard() {
@@ -55,6 +57,8 @@ function Dashboard() {
         <button onClick={logout} style={dashboardStyles.logoutBtn}>
           Cerrar Sesión
         </button>
+        <SyncStatusBadge />
+        <SyncNowButton />
       </header>
 
       <main style={dashboardStyles.main}>
@@ -70,12 +74,15 @@ function Dashboard() {
         <div style={dashboardStyles.workflowGrid}>
           <SiniganAnimalLookup token={user.token} onAnimalSelected={setSelectedAnimal} />
           {canCapture ? (
-            <OfflineSanitaryCapture
-              token={user.token}
-              userEmail={user.email}
-              selectedAnimal={selectedAnimal}
-              onSynchronized={() => setHistoryRefresh((value) => value + 1)}
-            />
+            <>
+              <OfflineSanitaryCapture
+                token={user.token}
+                userEmail={user.email}
+                selectedAnimal={selectedAnimal}
+                onSynchronized={() => setHistoryRefresh((value) => value + 1)}
+              />
+              <OfflineCapturePanel />
+            </>
           ) : (
             <section style={dashboardStyles.card} aria-labelledby="readonly-title">
               <h2 id="readonly-title">Consulta de solo lectura</h2>
@@ -139,6 +146,7 @@ function Dashboard() {
         </div>
 
         {role === 'ADMINISTRADOR' && <UserAdminPanel />}
+        <OfflineSyncProvider />
       </main>
     </div>
   );

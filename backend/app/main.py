@@ -28,14 +28,26 @@ from app.features.sinigan_sync.schema_migration import (
     ensure_sinigan_sync_schema,
 )
 from app.features.sinigan_sync.service import seed_field_animals
+from app.features.offline_capture.models import CatalogAnimal  # noqa: F401
+from app.features.offline_capture.router import router as offline_capture_router
+from app.features.offline_capture.service import seed_catalog
+from app.features.offline_sync.models import (  # noqa: F401
+    OfflineSyncBatchLog,
+    OfflineSyncEvent,
+    OfflineSyncIdConflict,
+)
+from app.features.offline_sync.router import router as offline_sync_router
+from app.features.offline_sync.schema_migration import ensure_offline_sync_schema
 
 # Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
 ensure_auth_schema(engine)
 ensure_sanitary_events_schema(engine)
 ensure_sinigan_sync_schema(engine)
+ensure_offline_sync_schema(engine)
 seed_initial_users()
 seed_field_animals()
+seed_catalog()
 
 app = FastAPI(title="BovinoTech IoT API", version="1.0.0")
 
@@ -63,6 +75,16 @@ app.include_router(
     sanitary_events_router,
     prefix="/sanitary-events",
     tags=["Eventos sanitarios"],
+)
+app.include_router(
+    offline_capture_router,
+    prefix="/offline-capture",
+    tags=["Captura offline"],
+)
+app.include_router(
+    offline_sync_router,
+    prefix="/offline-sync",
+    tags=["Sincronización offline"],
 )
 
 
