@@ -13,6 +13,9 @@ from app.features.sanitary_events.router import (
     events_router as sanitary_events_router,
     router as sync_router,
 )
+from app.features.sanitary_events.schema_migration import (
+    ensure_sanitary_events_schema,
+)
 from app.features.sinigan.router import router as sinigan_router
 from app.features.sinigan_sync.models import (  # noqa: F401
     FieldAnimalRecord,
@@ -29,6 +32,7 @@ from app.features.sinigan_sync.service import seed_field_animals
 # Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
 ensure_auth_schema(engine)
+ensure_sanitary_events_schema(engine)
 ensure_sinigan_sync_schema(engine)
 seed_initial_users()
 seed_field_animals()
