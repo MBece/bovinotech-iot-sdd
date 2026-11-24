@@ -20,7 +20,7 @@ export const createTimeFormatter = (timeZone) =>
     ...(timeZone ? { timeZone } : {}),
   });
 
-export const buildPendingTray = (events, { authorEmail, farmId, timeZone } = {}) => {
+export const buildPendingTray = (events, { authorEmail, farmId, timeZone, syncLabelOf } = {}) => {
   const formatter = createTimeFormatter(timeZone);
   return events
     .filter((event) => event.authorEmail === authorEmail && event.farmId === farmId)
@@ -31,7 +31,8 @@ export const buildPendingTray = (events, { authorEmail, farmId, timeZone } = {})
       animalLabel: event.animalName ? `${event.din} · ${event.animalName}` : event.din,
       typeLabel: eventTypeLabel(event.eventType),
       capturedAtLabel: formatter.format(time),
-      syncLabel: SYNC_STATUS_LABELS[event.syncStatus] ?? event.syncStatus,
+      // HU-03 provides the real sync state through syncLabelOf.
+      syncLabel: syncLabelOf?.(event) ?? SYNC_STATUS_LABELS[event.syncStatus] ?? event.syncStatus,
       validationLabel: VALIDATION_STATUS_LABELS[event.validationStatus] ?? event.validationStatus,
       authorLabel: event.authorVerificationPending ? AUTHOR_VERIFICATION_LABEL : null,
       legacyLabel: event.origin === ORIGIN.LEGACY ? LEGACY_LABEL : null,

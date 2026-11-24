@@ -20,7 +20,7 @@ const fieldValue = (event, name) => {
   return event[name];
 };
 
-export const buildEventDetail = (event, { timeZone } = {}) => {
+export const buildEventDetail = (event, { timeZone, syncLabelOf } = {}) => {
   const typeFields = fieldsForType(event.eventType);
   const fields = DISPLAY_FIELDS.filter((name) => typeFields.includes(name))
     .map((name) => ({ label: FIELD_LABELS[name], value: fieldValue(event, name) }))
@@ -28,7 +28,12 @@ export const buildEventDetail = (event, { timeZone } = {}) => {
   if (event.notes) fields.push({ label: FIELD_LABELS.notes, value: event.notes });
 
   const states = [
-    { kind: 'sync', title: 'Sincronización', label: SYNC_STATUS_LABELS[event.syncStatus] ?? event.syncStatus },
+    {
+      kind: 'sync',
+      title: 'Sincronización',
+      // HU-03 provides the real sync state through syncLabelOf.
+      label: syncLabelOf?.(event) ?? SYNC_STATUS_LABELS[event.syncStatus] ?? event.syncStatus,
+    },
     {
       kind: 'validation',
       title: 'Validación',

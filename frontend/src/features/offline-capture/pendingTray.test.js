@@ -74,3 +74,16 @@ test('builds 1,000 events in under 300 ms (SC-007)', () => {
   assert.equal(tray.length, 1000);
   assert.ok(elapsed < 300, `took ${elapsed} ms`);
 });
+
+test('syncLabelOf replaces the sync label (HU-03 extension point)', () => {
+  const mine = event();
+  const [item] = buildPendingTray([mine], { ...user, syncLabelOf: (e) => `estado de ${e.clientEventId}` });
+
+  assert.equal(item.syncLabel, `estado de ${mine.clientEventId}`);
+});
+
+test('without syncLabelOf the default label is kept', () => {
+  const [item] = buildPendingTray([event()], user);
+
+  assert.equal(item.syncLabel, 'Pendiente de sincronización');
+});

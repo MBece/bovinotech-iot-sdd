@@ -80,3 +80,10 @@ test('exposes no edit action', () => {
     assert.doesNotMatch(key, /edit|delete|remove|update/i);
   }
 });
+
+test('syncLabelOf replaces the sync state label (HU-03 extension point)', () => {
+  const detail = buildEventDetail(event(), { syncLabelOf: () => 'Sincronizado' });
+
+  assert.equal(detail.states[0].label, 'Sincronizado');
+  assert.equal(detail.states[1].label, 'Pendiente de validación veterinaria');
+});
