@@ -10,6 +10,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  VITE_API_URL = "https://bovinotech-iot-sdd.onrender.com"
 
 # Redirección para Single Page Application (SPA / React Router)
 # Permite que cualquier ruta cargue index.html sin arrojar 404 en Netlify
