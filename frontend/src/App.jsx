@@ -10,6 +10,7 @@ import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
 import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
 import { UserAdminPanel } from './features/auth/UserAdminPanel';
 import { roleInfo } from './features/auth/roles';
+import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
 import './App.css';
 
 function Dashboard() {
@@ -75,6 +76,7 @@ function Dashboard() {
             selectedAnimal={selectedAnimal}
             onSynchronized={() => setHistoryRefresh((value) => value + 1)}
           />
+          <OfflineCapturePanel />
         </div>
 
         <SanitaryHistory
