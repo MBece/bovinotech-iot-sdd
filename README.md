@@ -14,16 +14,116 @@ Proyecto desarrollado bajo **Spec-Driven Development (SDD)** con **GitHub Spec K
 - **Frontend:** React 19, Vite (PWA), ESLint.
 - **CI/CD y DevSecOps:** GitHub Actions (.github/workflows/ci.yml).
 
-### Estructura Modular Aislada (Cero Conflictos de Merge)
-Cada integrante desarrolla su funcionalidad de forma vertical y aislada dentro de su propia carpeta features/<modulo>:
+---
 
-- .github/agents/ -> Topologia de 3 agentes (Especificador, Implementador, QA-Seguridad)
-- .github/workflows/ci.yml -> Pipeline automatico (Pytest + Bandit SAST + Vite Build)
-- .specify/memory/constitution.md -> Reglas innegociables del dominio (SINIGAN V6, Append-Only, Offline)
-- backend/app/features/ -> Modulos aislados por historia de usuario (FastAPI)
-- backend/tests/ -> Pruebas automatizadas TDD (Pytest)
-- frontend/src/features/ -> Interfaces React aisladas por historia de usuario
-- GEMINI.md -> Contexto multiagente automatico para Gemini CLI
+## Arquitectura de la Solución (BovinoTech IoT)
+
+BovinoTech IoT está diseñada como una arquitectura agroindustrial desacoplada mediante **Rebanadas Verticales (*Vertical Slicing*)**, preparada para entornos rurales hostiles con conectividad intermitente (*Offline-First*) y sujeta a estricta auditoría sanitaria oficial.
+
+### Diagrama General de Arquitectura
+
+```mermaid
+flowchart TD
+    subgraph Cliente ["Capa Cliente: PWA Offline-First (React 19 + Vite)"]
+        UI["Interfaz de Usuario (Español)"]
+        LocalStore["Almacén Local (IndexedDB / LocalStorage)\nUUID client_event_id\nEstado: PENDIENTE_SINCRONIZACION"]
+        UI -->|Captura local < 2s| LocalStore
+    end
+
+    subgraph API ["Backend API: FastAPI (Python 3.12) - Vertical Slices"]
+        Router["API Gateway / Routers Modulares\nmain.py"]
+        
+        subgraph Slices ["Módulos Aislados (features/<modulo>)"]
+            Auth["features/auth\n(RBAC, JWT, Bcrypt)"]
+            Capture["features/offline_capture\n(Catálogo Local)"]
+            Sync["features/offline_sync\n(Idempotencia por Lotes)"]
+            Sanitary["features/sanitary_events\n(Append-Only)"]
+            Sinigan["features/sinigan_sync\n(Mock V6 & Conflictos)"]
+            Telemetry["features/telemetry_alerts\n(IoT SLO < 10s)"]
+            Genealogy["features/genealogy\n(Anti-ciclos & Consanguinidad)"]
+            Productivity["features/productivity\n(GDP & Pesajes Atípicos)"]
+            KPI["features/kpi_dashboard\n(Tablero Auditado)"]
+            Ops["features/observability_ops\n(Correlation ID & SRE)"]
+        end
+    end
+
+    subgraph Persistencia ["Capa de Persistencia y Gobernanza"]
+        DB[(Base de Datos Append-Only\nSQLite / SQLAlchemy)]
+        SiniganMock["Adaptador SINIGÁN V6 Mock\n(Fuente de Verdad Legal)"]
+    end
+
+    LocalStore -.->|Sincronización por Lotes /sync/batch| Router
+    Router --> Auth
+    Router --> Capture
+    Router --> Sync
+    Router --> Sanitary
+    Router --> Sinigan
+    Router --> Telemetry
+    Router --> Genealogy
+    Router --> Productivity
+    Router --> KPI
+    Router --> Ops
+
+    Sanitary -->|Solo Anexión (cero UPDATE/DELETE)| DB
+    Sync -->|Validación Idempotente| DB
+    Sinigan <-->|Conciliación de discrepancias| SiniganMock
+```
+
+### Patrones de Arquitectura Fundamentales
+
+1. **Rebanadas Verticales (*Vertical Slicing*) y Desacoplamiento por `din`:**
+   * Cada historia reside en su carpeta independiente (`features/<modulo>/`) con sus propios modelos, esquemas, servicios y componentes UI.
+   * Ningún módulo tiene claves foráneas bloqueantes contra tablas de otras historias en desarrollo concurrente. Todas las entidades se vinculan mediante el identificador estándar del animal (`din`, ej. `DIN-DEMO-0001`).
+2. **Operación Offline-First y Sincronización Idempotente:**
+   * En el potrero sin red, las capturas se registran en menos de 2 segundos en el cliente asignando un identificador universal único (`client_event_id` UUIDv4).
+   * Al recuperar conectividad, el endpoint `/sync/batches` procesa lotes de forma idempotente: eventos ya registrados responden como `DUPLICADO` sin corromper ni duplicar datos.
+3. **Historial Sanitario Inmutable (*Append-Only*):**
+   * Por regulación agropecuaria y trazabilidad, está prohibido ejecutar sentencias `UPDATE` o `DELETE` destructivas sobre eventos sanitarios.
+   * Toda corrección veterinaria crea un nuevo registro vinculado al original mediante `corrected_event_id`, registrando obligatoriamente el motivo, autor con rol `VETERINARIO` y marca temporal UTC.
+4. **Interoperabilidad Oficial (SINIGÁN V6) y Conciliación Humana:**
+   * El adaptador de SINIGÁN V6 actúa como fuente de verdad legal para propiedad, sexo y predio. Si la captura de campo difiere de la base oficial, nunca se sobrescribe automáticamente: se crea un ticket de conflicto para decisión médica veterinaria.
+
+---
+
+## Topología Multiagente y Gobernanza (Modalidad B)
+
+La gobernanza de desarrollo se estructura bajo una **Topología de 3 Agentes Especializados con Supervisión Humana Continua (*Human-in-the-Loop*)**, operando bajo la metodología Lean-Kanban con límite estricto de **WIP = 1** por integrante.
+
+### Diagrama de Topología y Flujo de Trabajo
+
+```mermaid
+flowchart LR
+    Lider([Desarrollador Líder\nHuman-in-the-Loop])
+    
+    subgraph SpecKit ["GitHub Spec Kit Workflow"]
+        Esp["@especificador\n(Arquitecto de Dominio)"]
+        Imp["@implementador\n(Full-Stack Vertical Slicing)"]
+        QA["@qa-seguridad\n(Auditor DevSecOps & SRE)"]
+    end
+
+    CI["Pipeline CI / DevSecOps\n(Pytest + Bandit + Vite < 90s)"]
+    Repo[(GitHub: main)]
+
+    Lider -->|1. Rama aislada & prompt| Esp
+    Esp -->|/speckit.specify\nspec.md en español| Esp
+    Esp -->|/speckit.plan & tasks\nContratos Pydantic| Imp
+    Imp -->|/speckit.implement\nTDD: Rojo -> Verde| Imp
+    Imp -->|features/<modulo>\nmain.py & App.jsx| QA
+    QA -->|Auditoría ISO 25010\nNISTIR 8259A & SLOs| Lider
+    Lider -->|git push origin feat/hu-XX\nPull Request| CI
+    CI -->|Gates superadas| Repo
+```
+
+### Matriz de Roles y Responsabilidades
+
+| Agente / Rol | Archivo de Contexto | Idioma y Enfoque | Responsabilidades Principales | Lo que TIENE PROHIBIDO hacer |
+|---|---|---|---|---|
+| **Humano en el Bucle** (*Líder*) | Documento E2E / Backlog | Español / Toma de Decisiones | Define prioridades Kanban (WIP=1), formula prompts, supervisa la conciliación y aprueba los Pull Requests hacia `main`. | Aprobar cambios sin pruebas automatizadas o que violen la constitución. |
+| **`@especificador`** | `.github/agents/especificador.agent.md` | **Español** (Negocio) | Ejecuta `/speckit.specify`, `/speckit.plan` y `/speckit.tasks`. Redacta el QUÉ funcional (`Given/When/Then`), contratos Pydantic y desglose de tareas ordenadas por TDD. | **Prohibido escribir código productivo**, implementar frameworks en `spec.md` o alterar la arquitectura base. |
+| **`@implementador`** | `.github/agents/implementador.agent.md` | **Inglés** (Código) / **Español** (UI) | Ejecuta `/speckit.implement`. Escribe pruebas TDD en `backend/tests/` (rojo), implementa el backend en `features/<modulo>/`, frontend en React y registra en `main.py`/`App.jsx`. | **Prohibido modificar carpetas de otros módulos**, usar `UPDATE`/`DELETE` destructivos o exponer credenciales. |
+| **`@qa-seguridad`** | `.github/agents/qa-seguridad.agent.md` | **Español** (Auditoría) | Audita código contra `ISO/IEC 25010:2023` y `NISTIR 8259A`. Verifica latencia de alertas (< 10 s), RBAC, contratos tipados, Bandit SAST y suite de pruebas en verde. | **Prohibido dar visto bueno si hay hallazgos de seguridad**, colisiones de carpetas o pruebas fallidas. |
+
+---
 
 ---
 
@@ -85,7 +185,7 @@ Inicia gemini en la raiz del proyecto (la primera vez pedira autenticar con cuen
 
 ## Historias de Usuario del Proyecto (Backlog MVP)
 
-> 📄 **Documentación Completa:** Para ver el detalle técnico, contratos exhaustivos y criterios *Given / When / Then*, consulta [HISTORIAS_USUARIO.md](HISTORIAS_USUARIO.md) y la [Guía de Sustentación](guia_presentacion.txt).
+> 📄 **Documentación Completa:** Para ver el detalle técnico, contratos exhaustivos y criterios *Given / When / Then*, consulta [HISTORIAS_USUARIO.md](HISTORIAS_USUARIO.md) y la [Guía de Sustentación](guia_presentacion.md).
 
 ### Matriz de Distribución y Alcance
 
