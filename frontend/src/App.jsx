@@ -5,7 +5,6 @@ import { authService } from './features/auth/authService';
 import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
 import { SiniganReconciliation } from './features/sinigan-sync/SiniganReconciliation';
 import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
-import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
 import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
 import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
 import { UserAdminPanel } from './features/auth/UserAdminPanel';
@@ -13,6 +12,7 @@ import { roleInfo } from './features/auth/roles';
 import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
 import { OfflineSyncProvider } from './features/offline-sync';
 import { SyncNowButton, SyncStatusBadge } from './features/offline-sync';
+import { SanitaryTimeline } from './features/sanitary_events';
 import './App.css';
 
 function Dashboard() {
@@ -83,7 +83,7 @@ function Dashboard() {
           <OfflineCapturePanel />
         </div>
 
-        <SanitaryHistory
+        <SanitaryTimeline
           key={selectedAnimal?.din || 'sin-animal'}
           token={user.token}
           role={role}

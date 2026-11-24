@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from app.features.sanitary_events.models import SanitaryEvent
 from app.main import app
 
 
@@ -50,10 +52,15 @@ def correction_payload(base_version: int, notes: str = "Observación corregida")
     }
 
 
-def test_veterinarian_correction_creates_new_version_and_preserves_original():
+def test_veterinarian_correction_creates_new_version_and_preserves_original(db_session):
     operario_headers = login("operario@bovinotech.co")
     veterinarian_headers = login("vet@bovinotech.co")
     event_id, client_event_id = create_event(operario_headers)
+    source = db_session.get(SanitaryEvent, event_id)
+    original_snapshot = {
+        column.name: getattr(source, column.name)
+        for column in SanitaryEvent.__table__.columns
+    }
 
     correction = client.post(
         f"/sanitary-events/{event_id}/corrections",
@@ -75,6 +82,18 @@ def test_veterinarian_correction_creates_new_version_and_preserves_original():
     assert records[0]["notes"] == "Observación original"
     assert records[1]["notes"] == "Observación corregida"
     assert records[1]["reason"] == "Ajuste de dosis registrado por el veterinario"
+    appended = (
+        db_session.query(SanitaryEvent)
+        .filter(SanitaryEvent.corrected_event_id == event_id)
+        .one()
+    )
+    db_session.expire_all()
+    persisted_source = db_session.get(SanitaryEvent, event_id)
+    assert {
+        column.name: getattr(persisted_source, column.name)
+        for column in SanitaryEvent.__table__.columns
+    } == original_snapshot
+    assert appended.reason == "Ajuste de dosis registrado por el veterinario"
 
 
 def test_operario_cannot_correct_and_stale_version_is_rejected():
@@ -112,3 +131,51 @@ def test_destructive_event_routes_are_not_available():
 
     assert update.status_code in (404, 405)
     assert delete.status_code in (404, 405)
+
+
+def test_legacy_history_is_limited_to_active_farm(db_session):
+    db_session.add(
+        SanitaryEvent(
+            client_event_id=str(uuid4()),
+            din="DIN-DEMO-000002",
+            event_type="TREATMENT",
+            field_occurred_at=datetime(2026, 11, 18, 18, 30, tzinfo=timezone.utc),
+            author_email="vet2@bovinotech.co",
+            farm_id=2,
+            notes="Other farm event",
+        )
+    )
+    db_session.commit()
+    veterinarian_headers = login("vet@bovinotech.co")
+
+    history = client.get(
+        "/sanitary-events/by-din/DIN-DEMO-000002/history",
+        headers=veterinarian_headers,
+    )
+
+    assert history.status_code == 200
+    assert history.json()["items"] == []
+
+
+def test_legacy_correction_rejects_event_from_another_farm(db_session):
+    source = SanitaryEvent(
+        client_event_id=str(uuid4()),
+        din="DIN-DEMO-000002",
+        event_type="TREATMENT",
+        field_occurred_at=datetime(2026, 11, 18, 18, 30, tzinfo=timezone.utc),
+        author_email="vet2@bovinotech.co",
+        farm_id=2,
+        notes="Other farm event",
+    )
+    db_session.add(source)
+    db_session.commit()
+    veterinarian_headers = login("vet@bovinotech.co")
+
+    response = client.post(
+        f"/sanitary-events/{source.id}/corrections",
+        headers=veterinarian_headers,
+        json=correction_payload(1),
+    )
+
+    assert response.status_code == 404
+    assert db_session.query(SanitaryEvent).filter_by(id=source.id).count() == 1

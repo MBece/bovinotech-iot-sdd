@@ -1,0 +1,211 @@
+.sanitary-timeline {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #d5e4dc;
+  border-radius: 1rem;
+  background: #fff;
+  color: #17382c;
+  text-align: left;
+}
+
+.sanitary-timeline-heading,
+.sanitary-event-title,
+.sanitary-form-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sanitary-timeline-heading h2 {
+  margin: 0.15rem 0 0;
+  color: #104c38;
+  font-size: 1.4rem;
+}
+
+.sanitary-eyebrow {
+  margin: 0;
+  color: #39705a;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.sanitary-connection,
+.sanitary-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.sanitary-connection.is-online {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sanitary-connection.is-offline {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sanitary-description,
+.sanitary-event-meta {
+  color: #53675d;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.sanitary-stale,
+.sanitary-notice,
+.sanitary-error,
+.sanitary-withdrawal {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  line-height: 1.45;
+}
+
+.sanitary-stale {
+  background: #fff7d6;
+  color: #674d00;
+}
+
+.sanitary-notice {
+  background: #e7f5ed;
+  color: #176b4d;
+}
+
+.sanitary-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sanitary-state {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: #f5f8f6;
+  color: #53675d;
+}
+
+.sanitary-event-list {
+  display: grid;
+  gap: 0.8rem;
+  margin: 1rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sanitary-event {
+  position: relative;
+  padding: 0.85rem;
+  border: 1px solid #dce8e1;
+  border-left: 4px solid #37805d;
+  border-radius: 0.6rem;
+  background: #fbfdfb;
+}
+
+.sanitary-event h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.sanitary-event-meta,
+.sanitary-event-detail {
+  margin: 0.45rem 0;
+  overflow-wrap: anywhere;
+}
+
+.sanitary-event-reason {
+  padding: 0.65rem;
+  border-radius: 0.4rem;
+  background: #fff7dc;
+  color: #604900;
+}
+
+.sanitary-withdrawal {
+  background: #e8f4e8;
+  color: #245c2f;
+  font-weight: 750;
+}
+
+.sanitary-withdrawal.is-active {
+  border: 1px solid #e8a315;
+  background: #fff0bf;
+  color: #6a4100;
+}
+
+.sanitary-action,
+.sanitary-form-actions button {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #176b4d;
+  border-radius: 0.55rem;
+  background: #176b4d;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sanitary-correction-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 0.65rem;
+  background: #f5f9f6;
+}
+
+.sanitary-correction-form h3 {
+  margin: 0;
+}
+
+.sanitary-correction-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.sanitary-correction-form input,
+.sanitary-correction-form select,
+.sanitary-correction-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem;
+  border: 1px solid #9db5a8;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #17382c;
+  font: inherit;
+}
+
+.sanitary-correction-form textarea {
+  min-height: 5rem;
+}
+
+.sanitary-form-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sanitary-form-actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+@media (min-width: 768px) {
+  .sanitary-timeline {
+    padding: 1.5rem;
+  }
+
+  .sanitary-event {
+    padding: 1rem 1.2rem;
+  }
+}

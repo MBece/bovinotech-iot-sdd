@@ -21,6 +21,7 @@ def test_processing_same_client_event_twice_creates_one_record():
     Base.metadata.create_all(engine)
     session = sessionmaker(bind=engine)()
     user = User(email="unit@bovinotech.test", role=UserRole.OPERARIO)
+    user.active_farm_id = 1
     item = SyncEventItem(
         clientEventId=uuid4(),
         din="DIN-DEMO-000001",

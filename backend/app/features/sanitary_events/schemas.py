@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class SyncEventItem(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     client_event_id: UUID = Field(alias="clientEventId")
     din: str = Field(min_length=1, max_length=32)
@@ -24,6 +24,8 @@ class SyncEventItem(BaseModel):
 
 
 class SyncBatchRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     items: list[SyncEventItem] = Field(min_length=1, max_length=100)
 
 
@@ -43,7 +45,7 @@ class SyncBatchResponse(BaseModel):
 
 
 class EventCorrectionRequest(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     base_version: int = Field(alias="baseVersion", ge=1)
     event_type: Literal["VACCINATION", "TREATMENT", "CHECKUP"] = Field(
@@ -53,6 +55,14 @@ class EventCorrectionRequest(BaseModel):
     dose: float | None = Field(default=None, gt=0, le=10000)
     notes: str | None = Field(default=None, max_length=500)
     reason: str = Field(min_length=5, max_length=500)
+
+    @field_validator("reason")
+    @classmethod
+    def require_nonblank_reason(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("El motivo de la corrección es obligatorio.")
+        return normalized
 
 
 class EventHistoryItem(BaseModel):
@@ -80,3 +90,59 @@ class EventHistoryItem(BaseModel):
 class EventHistoryResponse(BaseModel):
     din: str
     items: list[EventHistoryItem]
+
+
+def _camel_case(value: str) -> str:
+    first, *remaining = value.split("_")
+    return first + "".join(part.capitalize() for part in remaining)
+
+
+class SanitaryCorrectionRequest(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=_camel_case,
+        populate_by_name=True,
+        extra="forbid",
+    )
+
+    client_event_id: UUID
+    event_type: Literal["VACCINATION", "TREATMENT", "CHECKUP"]
+    field_occurred_at: datetime
+    dose: float | None = Field(default=None, gt=0, le=10000)
+    notes: str | None = Field(default=None, max_length=500)
+    reason: str = Field(min_length=1, max_length=500)
+    withdrawal_until: datetime | None = None
+
+    @field_validator("reason")
+    @classmethod
+    def require_nonblank_reason(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("El motivo de la corrección es obligatorio.")
+        return normalized
+
+
+class SanitaryEventRead(BaseModel):
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=_camel_case,
+        populate_by_name=True,
+    )
+
+    id: int
+    client_event_id: str
+    din: str
+    event_type: str
+    field_occurred_at: datetime
+    received_at: datetime
+    author_email: str
+    dose: float | None = None
+    notes: str | None = None
+    validation_status: str
+    corrected_event_id: int | None = None
+    reason: str | None = None
+    withdrawal_until: datetime | None = None
+
+
+class SanitaryEventHistoryResponse(BaseModel):
+    din: str
+    items: list[SanitaryEventRead]

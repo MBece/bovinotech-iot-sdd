@@ -23,6 +23,7 @@ def test_history_projection_orders_original_before_corrections():
         event_type="CHECKUP",
         field_occurred_at=datetime.now(timezone.utc),
         author_email="operario@bovinotech.co",
+        farm_id=1,
         notes="Original",
     )
     session.add(event)
@@ -51,7 +52,7 @@ def test_history_projection_orders_original_before_corrections():
     )
     session.commit()
 
-    history = SanitaryEventSyncService.get_history(event.din, session)
+    history = SanitaryEventSyncService.get_history(event.din, session, 1)
 
     assert [item.version for item in history] == [1, 2, 3]
     assert history[0].notes == "Original"

@@ -1,6 +1,15 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 
 from app.core.database import Base
 
@@ -22,6 +31,14 @@ class SanitaryEvent(Base):
     dose = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)
     validation_status = Column(String(32), nullable=False, default="PENDING_VALIDATION")
+    farm_id = Column(Integer, nullable=True)
+    corrected_event_id = Column(
+        Integer,
+        ForeignKey("sanitary_events.id", ondelete="RESTRICT"),
+        nullable=True,
+    )
+    reason = Column(Text, nullable=True)
+    withdrawal_until = Column(DateTime(timezone=True), nullable=True)
 
 
 class SanitaryEventCorrection(Base):
