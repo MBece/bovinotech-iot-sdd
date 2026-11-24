@@ -32,7 +32,13 @@ def _canonical_fields(event: CapturedEvent) -> dict:
 
 def canonical_payload(event: CapturedEvent) -> str:
     return json.dumps(
-        _canonical_fields(event), sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        _canonical_fields(event),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        # Defense in depth (QA-11): the schema already rejects non-finite
+        # doses; never emit the non-standard NaN / Infinity tokens.
+        allow_nan=False,
     )
 
 

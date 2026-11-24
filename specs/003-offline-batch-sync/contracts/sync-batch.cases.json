@@ -78,10 +78,18 @@
     },
     {
       "id": "network_error_whole_batch",
-      "criterion": "R5, FR-021",
+      "criterion": "R5, R9, FR-026 (QA-07)",
       "transport_error": "NETWORK",
       "items": ["e1", "e2"],
-      "expected_summary": { "failed_transient": 2, "attempts_incremented": true }
+      "expected_summary": { "local_all": "pending", "attempts_incremented": false, "stop_reason": "offline" }
+    },
+    {
+      "id": "timeout_whole_batch",
+      "criterion": "R5, R9, FR-026, FR-028 (QA-12)",
+      "transport_error": "TIMEOUT",
+      "items": ["e1", "e2"],
+      "expected_local": { "status": "failed", "failure_kind": "transient", "error_code": "TIMEOUT", "attempts": 1 },
+      "expected_summary": { "local_all": "failed/transient", "attempts_incremented": true, "stop_reason": "server_error" }
     },
     {
       "id": "unauthorized_pauses",

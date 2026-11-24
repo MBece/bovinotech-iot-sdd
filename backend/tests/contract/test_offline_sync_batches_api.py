@@ -113,6 +113,53 @@ def test_valid_batch_of_ten_is_synced_in_order_with_original_time(db_session):
         assert saved == original
 
 
+def test_requires_data_review_is_set_by_the_server_only(db_session):
+    regular = captured(requiresDataReview=True)
+    legacy = captured(origin="LEGACY", product=None, doseQuantity=None, doseUnit=None)
+    forged = captured(origin="LEGACY", doseQuantity=-5, requiresDataReview=False)
+
+    results = send([regular, legacy, forged]).json()["results"]
+
+    assert results[0]["status"] == "SINCRONIZADO"
+    assert results[0]["requiresDataReview"] is False
+    assert results[1]["status"] == "SINCRONIZADO"
+    assert results[1]["requiresDataReview"] is True
+    assert results[2]["status"] == "FALLIDO"
+    assert results[2]["errorCode"] == "VALIDATION_ERROR"
+    flags = {
+        row.client_event_id: row.requires_data_review
+        for row in db_session.query(OfflineSyncEvent).all()
+    }
+    assert flags == {regular["clientEventId"]: False, legacy["clientEventId"]: True}
+
+
+def test_non_finite_dose_is_rejected_over_http(db_session):
+    """QA-11: "NaN", "Infinity" and 1e400 (overflows to inf) never reach storage."""
+    items = [
+        captured(doseQuantity="NaN"),
+        captured(doseQuantity="Infinity"),
+        captured(origin="LEGACY", doseQuantity="-Infinity"),
+    ]
+    overflow = captured()
+    # json.dumps cannot emit 1e400, so the literal is written into the raw body.
+    overflow["doseQuantity"] = "__OVERFLOW__"
+    body = json.dumps({"items": [*items, overflow]}).replace('"__OVERFLOW__"', "1e400")
+
+    response = client.post(
+        BATCHES_PATH,
+        content=body,
+        headers={**login(), "Content-Type": "application/json"},
+    )
+
+    assert response.status_code == 200, response.text
+    results = response.json()["results"]
+    assert [r["status"] for r in results] == ["FALLIDO"] * 4
+    assert {r["errorCode"] for r in results} == {"VALIDATION_ERROR"}
+    assert all(r["retryable"] is False for r in results)
+    assert all("INVALID_FIELD" in r["detail"] for r in results)
+    assert db_session.query(OfflineSyncEvent).count() == 0
+
+
 def test_client_sync_status_is_ignored():
     response = send([captured(syncStatus="SINCRONIZADO")])
 

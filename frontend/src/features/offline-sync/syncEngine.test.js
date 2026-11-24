@@ -138,14 +138,84 @@ test('a cut mid-response leaves events pending; the next run confirms them as du
   await engine.runSync({ session, trigger: 'reconnect' });
   const afterCut = await states.getStatusMap();
   assert.equal(server.records.size, 2, 'the server stored the batch');
-  assert.notEqual(afterCut.get(events[0].clientEventId).status, 'synced');
-  assert.notEqual(afterCut.get(events[0].clientEventId).status, 'syncing');
+  assert.equal(afterCut.get(events[0].clientEventId).status, 'pending');
+  assert.equal(afterCut.get(events[0].clientEventId).attempts, 0, 'a lost connection is not an attempt (R9)');
 
   await engine.runSync({ session, trigger: 'manual', manual: true });
   const map = await states.getStatusMap();
   assert.equal(map.get(events[0].clientEventId).status, 'duplicate');
   assert.equal(map.get(events[1].clientEventId).status, 'duplicate');
   assert.equal(server.records.size, 2);
+});
+
+// QA-12: only a network error means "no connection". A timeout consumes an
+// attempt and waits with backoff, like a 5xx.
+const transportFailingOnceWith = (transportError, server) => {
+  let failed = false;
+  const inner = transportFor(server);
+  return {
+    async send(items, token) {
+      if (!failed) {
+        failed = true;
+        server.requests.push(items.map((item) => item.clientEventId));
+        return { transportError };
+      }
+      return inner.send(items, token);
+    },
+  };
+};
+
+const setupWithTransport = (events, transport, now) => {
+  const states = newStateRepository();
+  const engine = createSyncEngine({
+    captureRepository: captureRepositoryOf(events),
+    stateRepository: states,
+    transport,
+    now,
+    random: () => 0.5,
+  });
+  return { engine, states };
+};
+
+test('QA-12: after a timeout, attempts is 1 and the next attempt is scheduled', async () => {
+  const events = [capturedEvent(1)];
+  const server = createFakeServer();
+  let clock = new Date('2026-11-24T12:00:00Z');
+  const { engine, states } = setupWithTransport(events, transportFailingOnceWith('TIMEOUT', server), () => clock);
+
+  const summary = await engine.runSync({ session, trigger: 'timer' });
+
+  let state = (await states.getStatusMap()).get(events[0].clientEventId);
+  assert.equal(summary.stop_reason, 'server_error');
+  assert.equal(state.status, 'failed');
+  assert.equal(state.failure_kind, 'transient');
+  assert.equal(state.attempts, 1);
+  assert.equal(state.next_attempt_at, '2026-11-24T12:00:02.000Z');
+  assert.equal(state.error_code, 'TIMEOUT');
+
+  await engine.runSync({ session, trigger: 'timer' });
+  assert.equal(server.requests.length, 1, 'the timer respects the backoff');
+
+  clock = new Date('2026-11-24T12:00:03Z');
+  await engine.runSync({ session, trigger: 'timer' });
+  state = (await states.getStatusMap()).get(events[0].clientEventId);
+  assert.equal(server.requests.length, 2);
+  assert.equal(state.status, 'synced');
+});
+
+test('QA-12: after a network error, attempts stays 0 and nothing is scheduled', async () => {
+  const events = [capturedEvent(1)];
+  const server = createFakeServer();
+  const { engine, states } = setupWithTransport(events, transportFailingOnceWith('NETWORK', server), fixedNow);
+
+  const summary = await engine.runSync({ session, trigger: 'timer' });
+
+  const state = (await states.getStatusMap()).get(events[0].clientEventId);
+  assert.equal(summary.stop_reason, 'offline');
+  assert.equal(state.status, 'pending');
+  assert.equal(state.attempts, 0);
+  assert.equal(state.next_attempt_at, null);
+  assert.equal(state.error_code, null);
 });
 
 test('confirmed events are never sent again', async () => {
@@ -237,4 +307,55 @@ test('422 splits the batch until the offending event is isolated as a final fail
   assert.equal(map.get(bad).status, 'failed');
   assert.equal(map.get(bad).failure_kind, 'final');
   assert.equal(map.get(bad).error_code, 'REQUEST_REJECTED');
+});
+
+// --- QA-02: session changes between batches --------------------------------
+
+test('the run stops between batches when the session is no longer current', async () => {
+  const events = Array.from({ length: 120 }, (_, index) => capturedEvent(index));
+  const server = createFakeServer();
+  const states = newStateRepository();
+  const fakeTransport = transportFor(server);
+  let current = true;
+  const engine = createSyncEngine({
+    captureRepository: captureRepositoryOf(events),
+    stateRepository: states,
+    transport: {
+      async send(items, token) {
+        const response = await fakeTransport.send(items, token);
+        current = false; // another user signs in while batch 1 is in flight
+        return response;
+      },
+    },
+    now: fixedNow,
+    random: () => 0.5,
+  });
+
+  const summary = await engine.runSync({ session, trigger: 'timer', isCurrent: () => current });
+
+  const map = await states.getStatusMap();
+  assert.equal(summary.stop_reason, 'session_changed');
+  assert.deepEqual(server.requests.map((batch) => batch.length), [50]);
+  assert.equal(countBy(map, 'synced'), 50);
+  const untouched = events.slice(50).map((event) => map.get(event.clientEventId));
+  assert.ok(untouched.every((state) => !state || (state.status === 'pending' && state.attempts === 0)));
+});
+
+test('the transport receives the token of the run session', async () => {
+  const tokens = [];
+  const engine = createSyncEngine({
+    captureRepository: captureRepositoryOf([capturedEvent(1)]),
+    stateRepository: newStateRepository(),
+    transport: {
+      async send(items, token) {
+        tokens.push(token);
+        return { ok: true, status: 200, body: createFakeServer().handle(items) };
+      },
+    },
+    now: fixedNow,
+  });
+
+  await engine.runSync({ session, trigger: 'manual' });
+
+  assert.deepEqual(tokens, ['token-1']);
 });

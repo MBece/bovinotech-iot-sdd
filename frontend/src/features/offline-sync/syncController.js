@@ -16,7 +16,8 @@ export const createSyncController = ({
   let session = null;
   let timer = null;
   let started = false;
-  let authPaused = false;
+  // Token rejected by 401/403; runs with it are skipped until a new token.
+  let pausedToken = null;
   let snapshot = { online: connectivity.browserOnline(), running: false, lastRun: null, events: [], statusMap: new Map() };
   const listeners = new Set();
 
@@ -34,22 +35,37 @@ export const createSyncController = ({
     }
   };
 
+  const sameSession = (a, b) => a?.token === b?.token && a?.authorEmail === b?.authorEmail;
+
   const run = async (trigger, { manual = false } = {}) => {
-    if (!session?.token) return null;
+    // Each run keeps the session it started with (QA-02).
+    const runSession = session;
+    if (!runSession?.token) return null;
+    // Paused by 401/403: nothing is sent until a new token arrives (FR-020, QA-06).
+    if (pausedToken !== null && runSession.token === pausedToken) return null;
     const online = await connectivity.probe();
     publish({ online });
     if (!online) return null;
     publish({ running: true });
+    let summary;
     try {
-      const outcome = await lock.run(() => engine.runSync({ session, trigger, manual }));
+      const outcome = await lock.run(() =>
+        engine.runSync({ session: runSession, trigger, manual, isCurrent: () => sameSession(session, runSession) }),
+      );
       if (outcome.skipped) return null;
-      authPaused = outcome.value.stop_reason === 'auth_paused';
-      publish({ lastRun: outcome.value });
-      return outcome.value;
+      summary = outcome.value;
+      pausedToken = summary.stop_reason === 'auth_paused' ? runSession.token : null;
+      publish({ lastRun: summary });
     } finally {
       publish({ running: false });
       await refresh();
     }
+    // Another user signed in mid-run: their own run was skipped by the lock,
+    // so it starts now with their session.
+    if (summary.stop_reason === 'session_changed' && session?.token && !sameSession(session, runSession)) {
+      await run('login');
+    }
+    return summary;
   };
 
   const onOnline = () => run('reconnect');
@@ -77,7 +93,7 @@ export const createSyncController = ({
         await run('reconnect');
       } else if (next.token !== previousToken) {
         // New login: resume a sync paused by 401/403 (FR-020).
-        await run(authPaused ? 'login' : 'reconnect');
+        await run(pausedToken !== null ? 'login' : 'reconnect');
       }
     },
 
@@ -90,6 +106,7 @@ export const createSyncController = ({
       windowImpl?.removeEventListener?.('offline', onOffline);
       started = false;
       session = null;
+      pausedToken = null;
     },
   };
 };

@@ -56,20 +56,26 @@ export const validateCapturedEvent = (event, { now = new Date(), catalog } = {})
   const validType = EVENT_TYPE_CODES.includes(event.eventType);
   if (!validType) codes.push('INVALID_EVENT_TYPE');
 
-  // Legacy events keep what the preliminary capture stored (FR-019).
-  if (event.origin !== ORIGIN.LEGACY && validType) {
+  if (validType) {
+    // Legacy events keep what the preliminary capture stored (FR-019): only
+    // the required-field rules are skipped; dose and unit are still checked
+    // when present, as the server does (HU-03 QA-01).
+    const legacy = event.origin === ORIGIN.LEGACY;
     const hasDose = event.doseQuantity != null && event.doseQuantity !== '';
-    if (PRODUCT_TYPES.includes(event.eventType)) {
+    if (!legacy && PRODUCT_TYPES.includes(event.eventType)) {
       if (isBlank(event.product)) codes.push('PRODUCT_REQUIRED');
       if (!hasDose) codes.push('DOSE_REQUIRED');
     }
     if (hasDose) {
       const quantity = Number(event.doseQuantity);
-      if (!(quantity > 0)) codes.push('DOSE_NOT_POSITIVE');
-      if (!DOSE_UNITS.includes(event.doseUnit)) codes.push('DOSE_UNIT_REQUIRED');
+      // NaN and Infinity are rejected too (HU-03 QA-11): the server treats
+      // them as INVALID_FIELD, so the device must never queue them.
+      if (!Number.isFinite(quantity) || quantity <= 0) codes.push('DOSE_NOT_POSITIVE');
+      const unitToleratedMissing = legacy && event.doseUnit == null;
+      if (!DOSE_UNITS.includes(event.doseUnit) && !unitToleratedMissing) codes.push('DOSE_UNIT_REQUIRED');
     }
-    if (event.eventType === 'TREATMENT' && isBlank(event.reason)) codes.push('REASON_REQUIRED');
-    if (event.eventType === 'CHECKUP' && isBlank(event.finding)) codes.push('FINDING_REQUIRED');
+    if (!legacy && event.eventType === 'TREATMENT' && isBlank(event.reason)) codes.push('REASON_REQUIRED');
+    if (!legacy && event.eventType === 'CHECKUP' && isBlank(event.finding)) codes.push('FINDING_REQUIRED');
   }
 
   if (event.notes != null && String(event.notes).length > NOTES_MAX_LENGTH) {

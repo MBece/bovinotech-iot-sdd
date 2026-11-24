@@ -37,6 +37,7 @@ from app.features.offline_sync.schemas import (
 
 
 INITIAL_VALIDATION_STATUS = "PENDIENTE_VALIDACION"
+LEGACY_ORIGIN = "LEGACY"
 
 
 def _utc(value: datetime | None) -> datetime | None:
@@ -97,10 +98,11 @@ class _BatchProcessor:
 
         preliminary = self.repository.find_preliminary(str(client_event_id))
         if preliminary is not None:
-            return self._duplicate(index, client_event_id, preliminary.received_at, False)
+            return self._duplicate(index, client_event_id, preliminary.received_at, False, False)
 
         payload_hash = canonical_payload_hash(event)
         review = event.field_occurred_at > self.now + SERVER_FUTURE_TOLERANCE
+        data_review = event.origin == LEGACY_ORIGIN
         try:
             row = self.repository.insert_event(
                 client_event_id=str(client_event_id),
@@ -124,6 +126,7 @@ class _BatchProcessor:
                 author_verification_pending=event.author_verification_pending,
                 author_verification_result=author_verification_result(self.user, event),
                 requires_timestamp_review=review,
+                requires_data_review=data_review,
                 batch_log_id=self.batch_log_id,
             )
         except IntegrityError:
@@ -137,6 +140,7 @@ class _BatchProcessor:
             status="SINCRONIZADO",
             received_at=_utc(row.received_at),
             requires_timestamp_review=review,
+            requires_data_review=data_review,
         )
 
     def _resolve_existing(self, index, event: CapturedEvent, payload_hash: str, item):
@@ -149,12 +153,13 @@ class _BatchProcessor:
                 event.client_event_id,
                 existing.received_at,
                 existing.requires_timestamp_review,
+                existing.requires_data_review,
             )
         self.repository.add_conflict(existing, payload_hash, item, self.user.email, self.now)
         return _failed(index, event.client_event_id, ErrorCode.CLIENT_EVENT_ID_CONFLICT)
 
     @staticmethod
-    def _duplicate(index, client_event_id, received_at, review) -> SyncItemResult:
+    def _duplicate(index, client_event_id, received_at, review, data_review) -> SyncItemResult:
         return SyncItemResult(
             index=index,
             client_event_id=client_event_id,
@@ -162,6 +167,7 @@ class _BatchProcessor:
             detail=DUPLICATE_DETAIL,
             received_at=_utc(received_at),
             requires_timestamp_review=bool(review),
+            requires_data_review=bool(data_review),
         )
 
 

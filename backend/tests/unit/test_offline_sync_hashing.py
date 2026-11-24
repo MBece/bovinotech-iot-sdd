@@ -2,8 +2,10 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
+import pytest
+
 from app.features.offline_capture.schemas import CapturedEvent
-from app.features.offline_sync.hashing import canonical_payload_hash
+from app.features.offline_sync.hashing import canonical_payload, canonical_payload_hash
 
 NOW = datetime(2026, 11, 24, 15, 0, tzinfo=timezone.utc)
 
@@ -81,3 +83,19 @@ def test_mutable_states_do_not_change_the_hash():
     assert fingerprint(payload()) == fingerprint(
         payload(syncStatus="FALLIDO", validationStatus="VALIDADO")
     )
+
+
+@pytest.mark.parametrize("dose", ["NaN", "Infinity", 1e400])
+def test_non_finite_dose_never_reaches_the_hash(dose):
+    """QA-11: the schema rejects the value before hashing."""
+    with pytest.raises(ValueError):
+        fingerprint(payload(doseQuantity=dose))
+
+
+def test_canonical_payload_refuses_non_finite_numbers_as_defense_in_depth():
+    """Even if a non-finite dose bypassed validation, the canonical JSON must not
+    emit the non-standard ``NaN`` / ``Infinity`` tokens."""
+    event = CapturedEvent.model_validate(payload(), context={"now": NOW})
+    forged = event.model_copy(update={"dose_quantity": float("nan")})
+    with pytest.raises(ValueError):
+        canonical_payload(forged)

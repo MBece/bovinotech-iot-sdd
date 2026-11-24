@@ -39,7 +39,9 @@ export const createSyncEngine = ({
     const statusMap = await stateRepository.getStatusMap();
     await stateRepository.saveStates(syncingStates(batch, statusMap, now()));
     const response = await transport.send(batch.map(toCapturedPayload), session.token);
-    const { states, outcome } = applyBatchResult(batch, statusMap, response, now(), random);
+    const { states, outcome } = applyBatchResult(batch, statusMap, response, now(), random, {
+      senderEmail: session.authorEmail,
+    });
     await stateRepository.saveStates(states);
     return { states, outcome };
   };
@@ -47,7 +49,12 @@ export const createSyncEngine = ({
   return {
     recoverInterrupted: recover,
 
-    async runSync({ session, trigger, manual = false }) {
+    /**
+     * `isCurrent` tells whether `session` is still the signed-in one. When it
+     * stops being so, the run ends before the next batch (QA-02) and the
+     * unsent events stay untouched (pending, attempts kept).
+     */
+    async runSync({ session, trigger, manual = false, isCurrent = () => true }) {
       const summary = { ...emptySummary(), trigger, started_at: now().toISOString() };
       await recover();
       const events = await captureRepository.getAll();
@@ -59,6 +66,10 @@ export const createSyncEngine = ({
       let stopReason = 'queue_empty';
       const queue = chunkBatches(due);
       while (queue.length) {
+        if (!isCurrent()) {
+          stopReason = 'session_changed';
+          break;
+        }
         const batch = queue.shift();
         const { states, outcome } = await sendBatch(batch, session);
         summary.batches += 1;
