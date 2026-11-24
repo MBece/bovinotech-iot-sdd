@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { AuthProvider, useAuth } from './features/auth/AuthContext';
+import { LoginForm } from './features/auth/LoginForm';
 import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
 import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
 import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
 import './App.css';
 
 function Dashboard() {
+  const { user, token, role, activeFarm, isAuthenticated } = useAuth();
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [historyRefresh, setHistoryRefresh] = useState(0);
 
@@ -14,10 +17,13 @@ function Dashboard() {
         <div>
           <h1 style={dashboardStyles.brand}>BovinoTech IoT</h1>
           <p style={dashboardStyles.userTag}>
-            Estado: <strong>HU-01 en preparación para re-implementación</strong>
+            Usuario: <strong>{isAuthenticated ? `${user?.email} (${role})` : 'No autenticado'}</strong>
+            {isAuthenticated && ` · Finca: ${activeFarm}`}
           </p>
         </div>
       </header>
+
+      <LoginForm />
 
       <main style={dashboardStyles.main}>
         <section style={dashboardStyles.intro}>
@@ -29,10 +35,10 @@ function Dashboard() {
         </section>
 
         <div style={dashboardStyles.workflowGrid}>
-          <SiniganAnimalLookup token={null} onAnimalSelected={setSelectedAnimal} />
+          <SiniganAnimalLookup token={token} onAnimalSelected={setSelectedAnimal} />
           <OfflineSanitaryCapture
-            token={null}
-            userEmail="operario@bovinotech.co"
+            token={token}
+            userEmail={user?.email || "operario@bovinotech.co"}
             selectedAnimal={selectedAnimal}
             onSynchronized={() => setHistoryRefresh((value) => value + 1)}
           />
@@ -40,8 +46,8 @@ function Dashboard() {
 
         <SanitaryHistory
           key={selectedAnimal?.din || 'sin-animal'}
-          token={null}
-          role="OPERARIO"
+          token={token}
+          role={role || "OPERARIO"}
           selectedAnimal={selectedAnimal}
           refreshSignal={historyRefresh}
         />
@@ -51,7 +57,11 @@ function Dashboard() {
 }
 
 export function App() {
-  return <Dashboard />;
+  return (
+    <AuthProvider>
+      <Dashboard />
+    </AuthProvider>
+  );
 }
 
 const dashboardStyles = {
