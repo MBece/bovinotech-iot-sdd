@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { describeSyncState, useSyncStatus } from '../offline-sync';
 import { EventDetail } from './EventDetail.jsx';
 import { buildPendingTray } from './pendingTrayModel.js';
 import { styles } from './styles.js';
@@ -6,9 +7,19 @@ import { styles } from './styles.js';
 /** Pending tray of the user in the active farm, newest first (FR-011). */
 export function PendingTray({ events, authorEmail, farmId }) {
   const [openId, setOpenId] = useState(null);
+  // Real sync state from HU-03 (offline-sync), refreshed when events change.
+  const { statusMap, refresh } = useSyncStatus();
+  useEffect(() => {
+    refresh();
+  }, [events.length, refresh]);
   const items = useMemo(
-    () => buildPendingTray(events, { authorEmail, farmId }),
-    [events, authorEmail, farmId],
+    () =>
+      buildPendingTray(events, {
+        authorEmail,
+        farmId,
+        syncLabelOf: (event) => describeSyncState(statusMap.get(event.clientEventId)).label,
+      }),
+    [events, authorEmail, farmId, statusMap],
   );
   const eventsById = useMemo(
     () => new Map(events.map((event) => [event.clientEventId, event])),
@@ -44,7 +55,11 @@ export function PendingTray({ events, authorEmail, farmId }) {
                 </span>
               </button>
               {openId === item.clientEventId && eventsById.has(item.clientEventId) && (
-                <EventDetail event={eventsById.get(item.clientEventId)} onClose={() => setOpenId(null)} />
+                <EventDetail
+                  event={eventsById.get(item.clientEventId)}
+                  syncState={statusMap.get(item.clientEventId)}
+                  onClose={() => setOpenId(null)}
+                />
               )}
             </li>
           ))}

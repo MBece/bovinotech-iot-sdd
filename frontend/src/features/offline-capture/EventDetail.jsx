@@ -1,3 +1,4 @@
+import { describeSyncState, FailedEventDetail } from '../offline-sync';
 import { buildEventDetail } from './eventDetailModel.js';
 import { styles } from './styles.js';
 
@@ -8,8 +9,8 @@ const BADGE_BY_KIND = {
 };
 
 /** Read-only detail with both states as explicit text (FR-012, FR-016). */
-export function EventDetail({ event, onClose }) {
-  const detail = buildEventDetail(event);
+export function EventDetail({ event, syncState, onClose }) {
+  const detail = buildEventDetail(event, { syncLabelOf: () => describeSyncState(syncState).label });
 
   return (
     <article style={styles.detail} aria-labelledby={`detail-${detail.clientEventId}`}>
@@ -37,6 +38,7 @@ export function EventDetail({ event, onClose }) {
         <dt style={styles.detailLabel}>Identificador</dt>
         <dd style={{ margin: 0, fontSize: 13, wordBreak: 'break-all' }}>{detail.clientEventId}</dd>
       </dl>
+      <FailedEventDetail state={syncState} />
 
       <p style={styles.muted}>
         Los eventos no se pueden editar ni borrar. Las correcciones se registran como un evento nuevo
