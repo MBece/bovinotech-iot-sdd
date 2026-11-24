@@ -24,49 +24,32 @@ BovinoTech IoT está diseñada como una arquitectura agroindustrial desacoplada 
 
 ```mermaid
 flowchart TD
-    subgraph Cliente ["Capa Cliente: PWA Offline-First (React 19 + Vite)"]
-        UI["Interfaz de Usuario (Español)"]
-        LocalStore["Almacén Local (IndexedDB / LocalStorage)\nUUID client_event_id\nEstado: PENDIENTE_SINCRONIZACION"]
-        UI -->|Captura local < 2s| LocalStore
+    classDef clientStyle fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef apiStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef sliceStyle fill:#ffffff,stroke:#4caf50,stroke-width:1px;
+    classDef dbStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+
+    Client["Cliente PWA (React 19 + Vite)<br/><b>Captura Offline-First</b><br/>LocalStorage / IndexedDB (UUID)"]:::clientStyle
+    Gateway["FastAPI Gateway (main.py)<br/>CORS / Middlewares"]:::apiStyle
+
+    subgraph Modulos ["Vertical Slices (backend/app/features/)"]
+        direction TB
+        M1["auth & rbac<br/>(JWT, Bcrypt, Scopes)"]:::sliceStyle
+        M2["offline_capture & sync<br/>(Lotes Idempotentes)"]:::sliceStyle
+        M3["sanitary_events<br/>(Historial Append-Only)"]:::sliceStyle
+        M4["sinigan_sync<br/>(Mock V6 & Conflictos)"]:::sliceStyle
+        M5["telemetry_alerts<br/>(IoT SLO menor a 10s)"]:::sliceStyle
+        M6["genealogy & productivity<br/>(GDP, Consanguinidad)"]:::sliceStyle
+        M7["kpi_dashboard & ops<br/>(Observabilidad SRE)"]:::sliceStyle
     end
 
-    subgraph API ["Backend API: FastAPI (Python 3.12) - Vertical Slices"]
-        Router["API Gateway / Routers Modulares\nmain.py"]
-        
-        subgraph Slices ["Módulos Aislados (features/<modulo>)"]
-            Auth["features/auth\n(RBAC, JWT, Bcrypt)"]
-            Capture["features/offline_capture\n(Catálogo Local)"]
-            Sync["features/offline_sync\n(Idempotencia por Lotes)"]
-            Sanitary["features/sanitary_events\n(Append-Only)"]
-            Sinigan["features/sinigan_sync\n(Mock V6 & Conflictos)"]
-            Telemetry["features/telemetry_alerts\n(IoT SLO < 10s)"]
-            Genealogy["features/genealogy\n(Anti-ciclos & Consanguinidad)"]
-            Productivity["features/productivity\n(GDP & Pesajes Atípicos)"]
-            KPI["features/kpi_dashboard\n(Tablero Auditado)"]
-            Ops["features/observability_ops\n(Correlation ID & SRE)"]
-        end
-    end
+    DB[("Base de Datos SQLite<br/><b>Historial Append-Only</b><br/>Cero UPDATE o DELETE")]:::dbStyle
+    SiniganAdapter["Adaptador Oficial SINIGAN V6 Mock<br/>(Fuente de Verdad Legal)"]:::dbStyle
 
-    subgraph Persistencia ["Capa de Persistencia y Gobernanza"]
-        DB[(Base de Datos Append-Only\nSQLite / SQLAlchemy)]
-        SiniganMock["Adaptador SINIGÁN V6 Mock\n(Fuente de Verdad Legal)"]
-    end
-
-    LocalStore -.->|Sincronización por Lotes /sync/batch| Router
-    Router --> Auth
-    Router --> Capture
-    Router --> Sync
-    Router --> Sanitary
-    Router --> Sinigan
-    Router --> Telemetry
-    Router --> Genealogy
-    Router --> Productivity
-    Router --> KPI
-    Router --> Ops
-
-    Sanitary -->|Solo Anexión (cero UPDATE/DELETE)| DB
-    Sync -->|Validación Idempotente| DB
-    Sinigan <-->|Conciliación de discrepancias| SiniganMock
+    Client -->|Sincronizacion por Lotes /sync/batches| Gateway
+    Gateway --> Modulos
+    Modulos -->|Escritura Append-Only| DB
+    Modulos <-->|Conciliacion humana de discrepancias| SiniganAdapter
 ```
 
 ### Patrones de Arquitectura Fundamentales
@@ -93,25 +76,24 @@ La gobernanza de desarrollo se estructura bajo una **Topología de 3 Agentes Esp
 
 ```mermaid
 flowchart LR
-    Lider([Desarrollador Líder\nHuman-in-the-Loop])
-    
-    subgraph SpecKit ["GitHub Spec Kit Workflow"]
-        Esp["@especificador\n(Arquitecto de Dominio)"]
-        Imp["@implementador\n(Full-Stack Vertical Slicing)"]
-        QA["@qa-seguridad\n(Auditor DevSecOps & SRE)"]
-    end
+    classDef humanStyle fill:#ede7f6,stroke:#7e57c2,stroke-width:2px;
+    classDef specStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px;
+    classDef impStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:2px;
+    classDef qaStyle fill:#fffde7,stroke:#fbc02d,stroke-width:2px;
+    classDef pipeStyle fill:#fbe9e7,stroke:#d84315,stroke-width:2px;
 
-    CI["Pipeline CI / DevSecOps\n(Pytest + Bandit + Vite < 90s)"]
-    Repo[(GitHub: main)]
+    Lider(["Desarrollador Lider<br/><b>Human-in-the-Loop</b><br/>Kanban WIP = 1"]):::humanStyle
+    Esp["@especificador<br/><b>Arquitecto de Dominio</b><br/>/speckit.specify & plan"]:::specStyle
+    Imp["@implementador<br/><b>Vertical Slicing</b><br/>/speckit.implement (TDD)"]:::impStyle
+    QA["@qa-seguridad<br/><b>DevSecOps & SRE</b><br/>Auditoria ISO 25010"]:::qaStyle
+    CI["Pipeline CI GitHub Actions<br/>Pytest + Bandit SAST + Build"]:::pipeStyle
 
-    Lider -->|1. Rama aislada & prompt| Esp
-    Esp -->|/speckit.specify\nspec.md en español| Esp
-    Esp -->|/speckit.plan & tasks\nContratos Pydantic| Imp
-    Imp -->|/speckit.implement\nTDD: Rojo -> Verde| Imp
-    Imp -->|features/<modulo>\nmain.py & App.jsx| QA
-    QA -->|Auditoría ISO 25010\nNISTIR 8259A & SLOs| Lider
-    Lider -->|git push origin feat/hu-XX\nPull Request| CI
-    CI -->|Gates superadas| Repo
+    Lider -->|1. Rama aislada y Prompt| Esp
+    Esp -->|2. spec.md y plan.md| Imp
+    Imp -->|3. TDD Rojo a Verde| QA
+    QA -->|4. Aprobacion y Dictamen| Lider
+    Lider -->|5. git push origin feat/*| CI
+    CI -->|6. Merge a main| Lider
 ```
 
 ### Matriz de Roles y Responsabilidades
