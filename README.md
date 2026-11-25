@@ -142,8 +142,21 @@ En otra terminal, desde la raiz del proyecto:
 
 - Aplicacion disponible en: http://localhost:5173
 
-### 4. Instalar Herramientas SDD (GitHub Spec Kit + Gemini CLI)
-    pip install git+[https://github.com/github/spec-kit.git](https://github.com/github/spec-kit.git)
+### 4. Credenciales de Prueba Preconfiguradas (Seed Data)
+
+El sistema inicializa automáticamente las siguientes cuentas institucionales de prueba para evaluar el control de acceso por roles (RBAC) y el aislamiento de fincas:
+
+| Rol | Correo Institucional | Contraseña | Fincas Asignadas | Alcance y Permisos en la Demostración |
+|---|---|---|---|---|
+| **`ADMINISTRADOR`** | `admin@bovinotech.co` | `Password123!` | `FINCA-01`, `FINCA-02` | Aprovisionamiento de usuarios, asignación de predios y auditoría de accesos. |
+| **`OPERARIO`** | `operario@bovinotech.co` | `Password123!` | `FINCA-01` | Captura offline en campo; **acceso denegado** a costos y validaciones clínicas. |
+| **`VETERINARIO`** | `vet@bovinotech.co` | `Password123!` | `FINCA-01`, `FINCA-02` | Validaciones clínicas, correcciones *append-only* y resolución de conflictos SINIGÁN. |
+| **`DIRECTIVO`** | `directivo@bovinotech.co` | `Password123!` | `FINCA-01`, `FINCA-02` | Tablero ejecutivo de indicadores, GDP, costos y reportes consolidados. |
+
+> 💡 **Tip:** En la interfaz web (`http://localhost:5173`), la pantalla de inicio cuenta con botones de **Acceso Rápido** que permiten alternar entre estos roles con un solo clic para agilizar la sustentación.
+
+### 5. Instalar Herramientas SDD (GitHub Spec Kit + Gemini CLI)
+    pip install git+https://github.com/github/spec-kit.git
     npm install -g @google/gemini-cli
 
 Inicia gemini en la raiz del proyecto (la primera vez pedira autenticar con cuenta de Google en el navegador).
