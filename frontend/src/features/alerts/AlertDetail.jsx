@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { formatPositionAge } from './alertAge.js';
+
 const typeLabel = (type) => type === 'IMMOBILITY' ? 'Inmovilidad' : 'Salida de potrero';
 
 export function AlertDetail({ alert, canClose, onClose }) {
@@ -18,7 +20,12 @@ export function AlertDetail({ alert, canClose, onClose }) {
       <p><strong>Primera evidencia:</strong> {new Date(alert.first_detected_at).toLocaleString('es-CO')}</p>
       <p><strong>Última evidencia:</strong> {new Date(alert.last_detected_at).toLocaleString('es-CO')}</p>
       <p><strong>Regla aplicada:</strong> versión #{alert.rule_version_id}</p>
-      {alert.latitude != null ? <p><strong>Última posición válida:</strong> {alert.latitude}, {alert.longitude}</p> : <p>Sin posición válida disponible.</p>}
+      {alert.latitude != null ? (
+        <p>
+          <strong>Última posición válida:</strong> {alert.latitude}, {alert.longitude}{' '}
+          <span style={styles.positionAge}>({formatPositionAge(alert.last_detected_at)})</span>
+        </p>
+      ) : <p>Sin posición válida disponible.</p>}
       {alert.closure_note && <p><strong>Atención registrada:</strong> {alert.closure_note}</p>}
       {canClose && alert.status === 'OPEN' && (
         <div style={styles.closeBox}>
@@ -33,6 +40,7 @@ export function AlertDetail({ alert, canClose, onClose }) {
 
 const styles = {
   detail: { borderTop: '1px solid #d1d5db', marginTop: '1rem', paddingTop: '1rem' },
+  positionAge: { color: '#4b5563' },
   closeBox: { display: 'grid', gap: '0.5rem', marginTop: '1rem' },
 };
 
