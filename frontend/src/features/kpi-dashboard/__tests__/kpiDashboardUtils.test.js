@@ -5,7 +5,6 @@ import {
   canExportAudit,
   canViewFinancials,
   formatGdp,
-  formatNumber,
   formatPercentage,
   buildDefaultDateRange,
 } from '../kpiDashboardUtils.js';

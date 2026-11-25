@@ -46,7 +46,7 @@ class SanitaryEventSyncService:
                 results.append(
                     SyncItemResult(
                         client_event_id=item.client_event_id,
-                        status="RECHAZADO",
+                        status="FALLIDO",
                         detail="DIN no encontrado en las referencias disponibles.",
                     )
                 )
@@ -58,7 +58,11 @@ class SanitaryEventSyncService:
                 event_type=item.event_type,
                 field_occurred_at=item.field_occurred_at,
                 author_email=current_user.email,
+                product=item.product,
                 dose=item.dose,
+                dose_unit=item.dose_unit,
+                clinical_reason=item.reason,
+                finding=item.finding,
                 notes=item.notes,
             )
             db.add(event)
@@ -66,7 +70,7 @@ class SanitaryEventSyncService:
             results.append(
                 SyncItemResult(
                     client_event_id=item.client_event_id,
-                    status="CREADO",
+                    status="SINCRONIZADO",
                     event_id=event.id,
                 )
             )
@@ -94,7 +98,11 @@ class SanitaryEventSyncService:
                     field_occurred_at=event.field_occurred_at,
                     received_at=event.received_at,
                     author_email=event.author_email,
+                    product=event.product,
                     dose=event.dose,
+                    dose_unit=event.dose_unit,
+                    clinical_reason=event.clinical_reason,
+                    finding=event.finding,
                     notes=event.notes,
                     validation_status=(
                         "PENDIENTE_VALIDACION"
@@ -120,7 +128,11 @@ class SanitaryEventSyncService:
                     field_occurred_at=correction.field_occurred_at,
                     received_at=correction.created_at,
                     author_email=correction.author_email,
+                    product=correction.product,
                     dose=correction.dose,
+                    dose_unit=correction.dose_unit,
+                    clinical_reason=correction.clinical_reason,
+                    finding=correction.finding,
                     notes=correction.notes,
                     reason=correction.reason,
                     validation_status="CORREGIDO",
@@ -160,7 +172,11 @@ class SanitaryEventSyncService:
             version=latest_version + 1,
             event_type=payload.event_type,
             field_occurred_at=payload.field_occurred_at,
+            product=payload.product,
             dose=payload.dose,
+            dose_unit=payload.dose_unit,
+            clinical_reason=payload.clinical_reason,
+            finding=payload.finding,
             notes=payload.notes,
             reason=payload.reason.strip(),
             author_email=current_user.email,

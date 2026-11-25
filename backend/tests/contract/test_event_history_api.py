@@ -29,7 +29,10 @@ def create_event(headers: dict[str, str]) -> tuple[int, str]:
                     "din": "DIN-DEMO-000002",
                     "eventType": "TREATMENT",
                     "fieldOccurredAt": "2026-11-18T18:30:00-05:00",
+                    "product": "Tratamiento UX",
                     "dose": 3,
+                    "doseUnit": "ml",
+                    "reason": "Tratamiento preventivo",
                     "notes": "Observación original",
                 }
             ]
@@ -44,7 +47,10 @@ def correction_payload(base_version: int, notes: str = "Observación corregida")
         "baseVersion": base_version,
         "eventType": "TREATMENT",
         "fieldOccurredAt": "2026-11-18T18:30:00-05:00",
+        "product": "Tratamiento UX",
         "dose": 2.5,
+        "doseUnit": "ml",
+        "clinicalReason": "Tratamiento preventivo",
         "notes": notes,
         "reason": "Ajuste de dosis registrado por el veterinario",
     }

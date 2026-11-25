@@ -1,4 +1,4 @@
-﻿name: BovinoTech CI/CD & DevSecOps
+name: BovinoTech CI/CD & DevSecOps
 
 on:
   push:
@@ -8,7 +8,9 @@ on:
 
 jobs:
   backend-quality-and-security:
+    name: Backend TDD & Bandit SAST
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     defaults:
       run:
         working-directory: ./backend
@@ -28,7 +30,9 @@ jobs:
         run: bandit -r app -ll
 
   frontend-build:
+    name: Frontend Lint & Build (PWA)
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     defaults:
       run:
         working-directory: ./frontend
@@ -37,9 +41,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Instalar y compilar React PWA
+      - name: Instalar dependencias
         run: |
           if [ -f package.json ]; then
             npm ci || npm install
+          fi
+      - name: Verificación de estilo y calidad (Lint)
+        run: |
+          if [ -f package.json ]; then
+            npm run lint
+          fi
+      - name: Compilar React PWA
+        run: |
+          if [ -f package.json ]; then
             npm run build
           fi
