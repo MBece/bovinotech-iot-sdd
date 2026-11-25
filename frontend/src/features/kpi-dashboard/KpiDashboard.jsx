@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { kpiDashboardService } from './kpiDashboardService';
 import { canExportAudit, formatGdp, formatNumber, formatPercentage, formatDate } from './kpiDashboardUtils';
 import { KpiDashboardCard } from './KpiDashboardCard';
@@ -13,37 +13,49 @@ const INDICATOR_COLORS = {
 };
 
 const INDICATOR_ICONS = {
-  validatedVaccinationCoverage: '💉',
-  pendingValidationEvents: '⏳',
-  openAlerts: '🚨',
-  averageGdp: '📈',
+  validatedVaccinationCoverage: '\u{1F489}',
+  pendingValidationEvents: '\u23F3',
+  openAlerts: '\u{1F6A8}',
+  averageGdp: '\u{1F4C8}',
 };
 
-export function KpiDashboard({ token, role, farmId, farms }) {
+export function KpiDashboard({ token, role, farmId }) {
   const [kpiData, setKpiData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({});
 
-  const currentFilters = { farmId, startDate: filters.startDate ?? null, endDate: filters.endDate ?? null };
-
-  const loadKpi = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await kpiDashboardService.getKpi(token, currentFilters);
-      setKpiData(data);
-    } catch (err) {
-      setError(err.message);
-      setKpiData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, JSON.stringify(currentFilters)]);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
-    loadKpi();
-  }, [loadKpi]);
+    const currentFilters = {
+      farmId,
+      startDate: filters.startDate ?? null,
+      endDate: filters.endDate ?? null,
+    };
+
+    const requestId = ++requestIdRef.current;
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await kpiDashboardService.getKpi(token, currentFilters);
+        if (requestId === requestIdRef.current) {
+          setKpiData(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (requestId === requestIdRef.current) {
+          setError(err.message);
+          setKpiData(null);
+          setLoading(false);
+        }
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [token, farmId, filters.startDate, filters.endDate]);
 
   const handleFiltersChange = (partial) => {
     setFilters((prev) => ({ ...prev, ...partial }));
@@ -76,8 +88,6 @@ export function KpiDashboard({ token, role, farmId, farms }) {
       </div>
 
       <KpiDashboardFilters
-        farmId={farmId}
-        farms={farms}
         onFiltersChange={handleFiltersChange}
         loading={loading}
       />
@@ -133,7 +143,10 @@ export function KpiDashboard({ token, role, farmId, farms }) {
       )}
 
       {canExportAudit(role) && (
-        <AuditExportButton token={token} filters={currentFilters} />
+        <AuditExportButton
+          token={token}
+          filters={{ farmId, startDate: filters.startDate ?? null, endDate: filters.endDate ?? null }}
+        />
       )}
     </section>
   );

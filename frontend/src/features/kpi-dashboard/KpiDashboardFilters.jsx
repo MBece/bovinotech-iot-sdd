@@ -1,6 +1,6 @@
 import { buildDefaultDateRange } from './kpiDashboardUtils';
 
-export function KpiDashboardFilters({ farmId, farms, onFiltersChange, loading }) {
+export function KpiDashboardFilters({ onFiltersChange, loading }) {
   const range = buildDefaultDateRange();
 
   const handleDateChange = (field, value) => {
