@@ -1,0 +1,102 @@
+{
+  "description": "Escenarios compartidos backend/frontend para la HU-03. 'server' describe el estado previo y los fallos inyectados; 'expected' el resultado por evento y el estado local resultante.",
+  "cases": [
+    {
+      "id": "AC1_batch_mixed_states",
+      "criterion": "HU-03 criterio 1",
+      "server": { "existing": ["e2"], "inject_transient_failure": [], "conflicting_content": ["e3"] },
+      "items": ["e1", "e2", "e3"],
+      "expected": [
+        { "id": "e1", "status": "SINCRONIZADO", "local": "synced" },
+        { "id": "e2", "status": "DUPLICADO", "local": "duplicate" },
+        { "id": "e3", "status": "FALLIDO", "retryable": false, "errorCode": "CLIENT_EVENT_ID_CONFLICT", "local": "failed/final" }
+      ]
+    },
+    {
+      "id": "AC3_resend_after_lost_response",
+      "criterion": "HU-03 criterio 3",
+      "server": { "existing": ["e1"], "inject_transient_failure": [], "conflicting_content": [] },
+      "items": ["e1"],
+      "expected": [
+        { "id": "e1", "status": "DUPLICADO", "local": "duplicate", "server_records_for_id": 1 }
+      ]
+    },
+    {
+      "id": "AC4_two_of_ten_transient",
+      "criterion": "HU-03 criterio 4",
+      "server": { "existing": [], "inject_transient_failure": ["e4", "e9"], "conflicting_content": [] },
+      "items": ["e1", "e2", "e3", "e4", "e5", "e6", "e7", "e8", "e9", "e10"],
+      "expected_summary": { "synced": 8, "failed_transient": 2, "still_in_queue": ["e4", "e9"] }
+    },
+    {
+      "id": "same_id_twice_in_batch",
+      "criterion": "spec HU2-E2",
+      "server": { "existing": [], "inject_transient_failure": [], "conflicting_content": [] },
+      "items": ["e1", "e1"],
+      "expected": [
+        { "id": "e1", "index": 0, "status": "SINCRONIZADO" },
+        { "id": "e1", "index": 1, "status": "DUPLICADO" }
+      ]
+    },
+    {
+      "id": "invalid_item_does_not_block_batch",
+      "criterion": "FR-014, R4",
+      "server": { "existing": [], "inject_transient_failure": [], "conflicting_content": [] },
+      "items": ["e1", "e_missing_product", "e3"],
+      "expected": [
+        { "id": "e1", "status": "SINCRONIZADO" },
+        { "id": "e_missing_product", "status": "FALLIDO", "retryable": false, "errorCode": "VALIDATION_ERROR", "local": "failed/final" },
+        { "id": "e3", "status": "SINCRONIZADO" }
+      ]
+    },
+    {
+      "id": "future_timestamp_is_kept",
+      "criterion": "FR-017b, R6",
+      "server": { "existing": [], "inject_transient_failure": [], "conflicting_content": [] },
+      "items": ["e_future_10min"],
+      "expected": [
+        { "id": "e_future_10min", "status": "SINCRONIZADO", "requiresTimestampReview": true }
+      ]
+    },
+    {
+      "id": "author_mismatch",
+      "criterion": "FR-019, R7",
+      "server": { "existing": [], "inject_transient_failure": [], "conflicting_content": [] },
+      "items": ["e_other_author"],
+      "expected": [
+        { "id": "e_other_author", "status": "FALLIDO", "retryable": false, "errorCode": "AUTHOR_MISMATCH" }
+      ]
+    },
+    {
+      "id": "legacy_event_already_in_preliminary_sync",
+      "criterion": "R2",
+      "server": { "existing_in_sanitary_events": ["e_legacy"], "existing": [], "inject_transient_failure": [], "conflicting_content": [] },
+      "items": ["e_legacy"],
+      "expected": [
+        { "id": "e_legacy", "status": "DUPLICADO", "local": "duplicate" }
+      ]
+    },
+    {
+      "id": "network_error_whole_batch",
+      "criterion": "R5, R9, FR-026 (QA-07)",
+      "transport_error": "NETWORK",
+      "items": ["e1", "e2"],
+      "expected_summary": { "local_all": "pending", "attempts_incremented": false, "stop_reason": "offline" }
+    },
+    {
+      "id": "timeout_whole_batch",
+      "criterion": "R5, R9, FR-026, FR-028 (QA-12)",
+      "transport_error": "TIMEOUT",
+      "items": ["e1", "e2"],
+      "expected_local": { "status": "failed", "failure_kind": "transient", "error_code": "TIMEOUT", "attempts": 1 },
+      "expected_summary": { "local_all": "failed/transient", "attempts_incremented": true, "stop_reason": "server_error" }
+    },
+    {
+      "id": "unauthorized_pauses",
+      "criterion": "FR-020",
+      "transport_error": "HTTP_401",
+      "items": ["e1", "e2"],
+      "expected_summary": { "local_all": "pending", "attempts_incremented": false, "stop_reason": "auth_paused" }
+    }
+  ]
+}

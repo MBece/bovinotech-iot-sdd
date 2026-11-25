@@ -19,7 +19,11 @@ class SanitaryEvent(Base):
         default=lambda: datetime.now(timezone.utc),
     )
     author_email = Column(String, nullable=False)
+    product = Column(String(120), nullable=True)
     dose = Column(Float, nullable=True)
+    dose_unit = Column(String(16), nullable=True)
+    clinical_reason = Column(Text, nullable=True)
+    finding = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
     validation_status = Column(String(32), nullable=False, default="PENDING_VALIDATION")
 
@@ -40,7 +44,11 @@ class SanitaryEventCorrection(Base):
     version = Column(Integer, nullable=False)
     event_type = Column(String(32), nullable=False)
     field_occurred_at = Column(DateTime(timezone=True), nullable=False)
+    product = Column(String(120), nullable=True)
     dose = Column(Float, nullable=True)
+    dose_unit = Column(String(16), nullable=True)
+    clinical_reason = Column(Text, nullable=True)
+    finding = Column(Text, nullable=True)
     notes = Column(Text, nullable=True)
     reason = Column(Text, nullable=False)
     author_email = Column(String, nullable=False)

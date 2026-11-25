@@ -1,0 +1,20 @@
+# Configuración de despliegue en Netlify - BovinoTech IoT
+
+[build]
+  # Carpeta donde reside el frontend de React + Vite dentro del monorepositorio
+  base = "frontend"
+  # Directorio generado por el comando vite build
+  publish = "dist"
+  # Comando de instalación y compilación
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  VITE_API_URL = "https://bovinotech-iot-sdd.onrender.com"
+
+# Redirección para Single Page Application (SPA / React Router)
+# Permite que cualquier ruta cargue index.html sin arrojar 404 en Netlify
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

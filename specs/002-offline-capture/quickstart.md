@@ -12,7 +12,7 @@ Cómo comprobar de punta a punta que la HU-02 funciona. Contratos en [contracts/
 
 ```bash
 cd backend && python -m pytest tests -q          # incluye las de offline_capture
-cd frontend && node --test src/features/offline-capture/ && npm run lint && npm run build
+cd frontend && node --test 'src/features/offline-capture/*.test.js' && npm run lint && npm run build
 ```
 
 | Archivo | Cubre |

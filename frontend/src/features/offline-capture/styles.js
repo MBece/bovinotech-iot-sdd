@@ -1,0 +1,46 @@
+// Field ergonomics (constitution §2.1): 48x48 px touch targets and high
+// contrast readable under direct sunlight (WCAG AA on white).
+const TOUCH = 48;
+
+export const styles = {
+  card: { background: '#fff', border: '1px solid #c9d8cf', borderRadius: 16, padding: 20, textAlign: 'left', color: '#10261d' },
+  headingRow: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' },
+  eyebrow: { color: '#1f5a43', fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' },
+  title: { margin: '4px 0 0', color: '#0d3326', fontSize: 22, fontWeight: 750 },
+  counter: { background: '#e3f1e9', color: '#0f5137', borderRadius: 999, padding: '6px 12px', fontSize: 13, fontWeight: 800 },
+  context: { margin: '12px 0', color: '#334a40', fontSize: 14 },
+  warning: { margin: '12px 0', padding: 12, borderRadius: 8, background: '#fff4cc', color: '#5c4100', fontSize: 14, fontWeight: 600 },
+  form: { display: 'grid', gap: 8 },
+  label: { fontSize: 14, fontWeight: 700, marginTop: 6, color: '#10261d' },
+  input: { minHeight: TOUCH, padding: '10px 12px', border: '2px solid #7d9a8b', borderRadius: 8, fontSize: 16, background: '#fff', color: '#10261d', boxSizing: 'border-box', width: '100%' },
+  inputError: { borderColor: '#b91c1c' },
+  fieldError: { color: '#991b1b', fontSize: 13, fontWeight: 700 },
+  typeGroup: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 },
+  typeButton: { minHeight: TOUCH, padding: '10px 12px', border: '2px solid #7d9a8b', borderRadius: 8, background: '#fff', color: '#10261d', fontWeight: 700, fontSize: 15, cursor: 'pointer' },
+  typeButtonActive: { background: '#0f5137', borderColor: '#0f5137', color: '#fff' },
+  doseRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
+  primaryButton: { minHeight: TOUCH, marginTop: 10, padding: 12, border: 0, borderRadius: 8, background: '#0f5137', color: '#fff', fontWeight: 800, fontSize: 16, cursor: 'pointer' },
+  disabled: { opacity: 0.6, cursor: 'wait' },
+  secondaryButton: { minHeight: TOUCH, minWidth: TOUCH, padding: '10px 14px', border: '2px solid #0f5137', borderRadius: 8, background: '#fff', color: '#0f5137', fontWeight: 800, fontSize: 15, cursor: 'pointer' },
+  success: { marginTop: 12, padding: 12, borderRadius: 8, background: '#dcfce7', color: '#14532d', fontSize: 14, fontWeight: 600 },
+  error: { marginTop: 12, padding: 12, borderRadius: 8, background: '#fee2e2', color: '#7f1d1d', fontSize: 14, fontWeight: 600 },
+  suggestions: { listStyle: 'none', margin: 0, padding: 0, border: '1px solid #c9d8cf', borderRadius: 8, overflow: 'hidden' },
+  suggestion: { display: 'flex', justifyContent: 'space-between', gap: 8, width: '100%', minHeight: TOUCH, padding: '10px 12px', border: 0, borderBottom: '1px solid #e2ebe6', background: '#fff', color: '#10261d', fontSize: 15, textAlign: 'left', cursor: 'pointer' },
+  selectedAnimal: { padding: 10, borderRadius: 8, background: '#e3f1e9', color: '#0f5137', fontWeight: 700, fontSize: 14 },
+  muted: { color: '#4b5f56', fontSize: 13 },
+  section: { marginTop: 22, borderTop: '1px solid #dbe5df', paddingTop: 16 },
+  sectionTitle: { margin: 0, fontSize: 17, color: '#0d3326' },
+  list: { display: 'grid', gap: 8, marginTop: 12, padding: 0, listStyle: 'none' },
+  item: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', width: '100%', minHeight: TOUCH, padding: 12, borderRadius: 10, background: '#f5f9f7', border: '1px solid #d4e1da', color: '#10261d', textAlign: 'left', cursor: 'pointer', fontSize: 15 },
+  itemMeta: { color: '#4b5f56', fontSize: 13, marginTop: 3 },
+  badges: { display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' },
+  syncBadge: { color: '#5c4100', background: '#ffe9a8', padding: '4px 8px', borderRadius: 999, fontSize: 12, fontWeight: 800 },
+  validationBadge: { color: '#1e3a8a', background: '#dbeafe', padding: '4px 8px', borderRadius: 999, fontSize: 12, fontWeight: 800 },
+  authorBadge: { color: '#7f1d1d', background: '#fee2e2', padding: '4px 8px', borderRadius: 999, fontSize: 12, fontWeight: 800 },
+  legacyBadge: { color: '#374151', background: '#e5e7eb', padding: '4px 8px', borderRadius: 999, fontSize: 12, fontWeight: 800 },
+  detail: { marginTop: 12, padding: 16, borderRadius: 12, border: '2px solid #0f5137', background: '#fff' },
+  detailGrid: { display: 'grid', gridTemplateColumns: 'minmax(110px, auto) 1fr', gap: '6px 12px', margin: '12px 0', fontSize: 15 },
+  detailLabel: { fontWeight: 700, color: '#334a40' },
+};
+
+export const mergeStyles = (...parts) => Object.assign({}, ...parts.filter(Boolean));

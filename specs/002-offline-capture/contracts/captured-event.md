@@ -61,6 +61,7 @@ Forma del evento que guarda el dispositivo y que la HU-03 enviará al servidor. 
 | `DOSE_UNIT_REQUIRED` | `doseQuantity` sin `doseUnit`, o unidad fuera de `ml`, `mg`, `g`, `unidades` | "Elija la unidad de la dosis." |
 | `REASON_REQUIRED` | Falta `reason` en `TREATMENT` | "Indique el motivo del tratamiento." |
 | `FINDING_REQUIRED` | Falta `finding` en `CHECKUP` | "Indique el hallazgo u observación." |
+| `NOTES_TOO_LONG` | `notes` supera 500 caracteres (data-model.md `events.notes`) | "Las observaciones no pueden superar 500 caracteres." |
 | `STORAGE_WRITE_FAILED` | No se pudo escribir en el almacenamiento del dispositivo (solo cliente) | "No se pudo guardar el evento en el dispositivo. Libere espacio e intente de nuevo." |
 
 Los eventos con `origin: "LEGACY"` quedan exentos de las reglas de FR-015 (FR-019).

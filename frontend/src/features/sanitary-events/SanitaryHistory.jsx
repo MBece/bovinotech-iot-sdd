@@ -5,6 +5,7 @@ const EVENT_LABELS = {
   VACCINATION: 'Vacunación',
   TREATMENT: 'Tratamiento',
   CHECKUP: 'Chequeo',
+  DEWORMING: 'Desparasitación',
 };
 
 const STATUS_LABELS = {
@@ -87,7 +88,11 @@ export function SanitaryHistory({ token, role, selectedAnimal, refreshSignal = 0
           baseVersion: editing.version,
           eventType: editing.eventType,
           fieldOccurredAt: editing.fieldOccurredAt,
+          product: editing.product,
           dose: editing.dose,
+          doseUnit: editing.doseUnit,
+          clinicalReason: editing.clinicalReason,
+          finding: editing.finding,
           notes: notes.trim() || null,
           reason,
         },
@@ -140,7 +145,10 @@ export function SanitaryHistory({ token, role, selectedAnimal, refreshSignal = 0
                 <div style={styles.meta}>
                   {new Date(item.fieldOccurredAt).toLocaleString()} · {item.authorEmail}
                 </div>
-                {item.dose && <div style={styles.detail}>Dosis: {item.dose}</div>}
+                {item.product && <div style={styles.detail}>Producto: {item.product}</div>}
+                {item.dose && <div style={styles.detail}>Dosis: {item.dose} {item.doseUnit || ''}</div>}
+                {item.clinicalReason && <div style={styles.detail}>Motivo clínico: {item.clinicalReason}</div>}
+                {item.finding && <div style={styles.detail}>Hallazgo: {item.finding}</div>}
                 {item.notes && <div style={styles.detail}>Observación: {item.notes}</div>}
                 {item.reason && <div style={styles.reason}>Motivo de corrección: {item.reason}</div>}
                 {role === 'VETERINARIO' && isLatest && (

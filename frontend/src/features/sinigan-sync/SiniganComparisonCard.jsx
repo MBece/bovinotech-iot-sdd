@@ -67,7 +67,7 @@ export function SiniganComparisonCard({ comparison }) {
         </article>
 
         <article style={styles.panel} aria-labelledby="field-record-title">
-          <span style={styles.eyebrow}>Registro local ficticio</span>
+          <span style={styles.eyebrow}>Registro local simulado</span>
           <h3 id="field-record-title" style={styles.panelTitle}>Registro de campo</h3>
           <FieldList
             fields={[
