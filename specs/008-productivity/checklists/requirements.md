@@ -1,7 +1,7 @@
 # Specification Quality Checklist: Productividad por lote
 
-**Purpose**: Validar la completitud y calidad de la especificación antes de proceder a la planificación  
-**Created**: 2026-11-24  
+**Purpose**: Validar la completitud y calidad de la especificación antes de proceder a la planificación
+**Created**: 2026-11-24
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
