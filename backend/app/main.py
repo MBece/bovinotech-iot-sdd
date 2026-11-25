@@ -38,6 +38,8 @@ from app.features.offline_sync.models import (  # noqa: F401
 )
 from app.features.offline_sync.router import router as offline_sync_router
 from app.features.offline_sync.schema_migration import ensure_offline_sync_schema
+from app.features.observability_ops.middleware import CorrelationIdMiddleware
+from app.features.observability_ops.router import router as ops_router
 
 # Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
@@ -58,6 +60,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(CorrelationIdMiddleware)
 
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
 app.include_router(
@@ -86,6 +89,7 @@ app.include_router(
     prefix="/offline-sync",
     tags=["Sincronización offline"],
 )
+app.include_router(ops_router)
 
 
 @app.get("/health")

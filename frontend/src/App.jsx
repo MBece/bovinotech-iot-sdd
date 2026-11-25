@@ -12,6 +12,7 @@ import { UserAdminPanel } from './features/auth/UserAdminPanel';
 import { roleInfo } from './features/auth/roles';
 import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
 import { OfflineSyncProvider, SyncNowButton, SyncStatusBadge } from './features/offline-sync';
+import { ObservabilityDashboard } from './features/observability_ops/ObservabilityDashboard';
 import './App.css';
 
 function Dashboard() {
@@ -147,6 +148,7 @@ function Dashboard() {
 
         {role === 'ADMINISTRADOR' && <UserAdminPanel />}
         <OfflineSyncProvider />
+        <ObservabilityDashboard />
       </main>
     </div>
   );
