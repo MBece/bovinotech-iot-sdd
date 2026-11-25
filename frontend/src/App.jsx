@@ -12,6 +12,7 @@ import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
 import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
 import { UserAdminPanel } from './features/auth/UserAdminPanel';
 import { roleInfo } from './features/auth/roles';
+import { AlertsPanel } from './features/alerts';
 import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
 import { OfflineSyncProvider, SyncNowButton, SyncStatusBadge } from './features/offline-sync';
 import { ObservabilityDashboard } from './features/observability_ops/ObservabilityDashboard';
@@ -127,6 +128,7 @@ function Dashboard() {
           />
         )}
 
+        <AlertsPanel />
         <KpiDashboard
           token={user.token}
           role={role}
