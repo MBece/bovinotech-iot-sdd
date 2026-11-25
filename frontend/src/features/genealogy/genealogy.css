@@ -1,0 +1,288 @@
+/* HU-07 genealogy - mobile-first, high contrast, 48x48 px touch targets. */
+.genealogy {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #111827;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.genealogy h2,
+.genealogy h3,
+.genealogy h4 {
+  margin: 0;
+  color: #0b3d2e;
+}
+
+.genealogy-header,
+.genealogy-sync,
+.genealogy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.genealogy-header {
+  justify-content: space-between;
+}
+
+.genealogy-badge {
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #78350f;
+  font-weight: 600;
+}
+
+.genealogy-btn,
+.genealogy-tab {
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0.65rem 1rem;
+  border: 2px solid #075b42;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #075b42;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.genealogy-btn--primary,
+.genealogy-tab[aria-selected='true'] {
+  background: #075b42;
+  color: #ffffff;
+}
+
+.genealogy-btn--danger {
+  border-color: #991b1b;
+  color: #991b1b;
+}
+
+.genealogy-btn:focus-visible,
+.genealogy-tab:focus-visible,
+.genealogy input:focus-visible,
+.genealogy select:focus-visible,
+.genealogy textarea:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+.genealogy-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.genealogy-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.genealogy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+.genealogy-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.genealogy-field input,
+.genealogy-field select,
+.genealogy-field textarea {
+  min-height: 48px;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #4b5563;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #111827;
+  background: #ffffff;
+}
+
+.genealogy-roles {
+  display: flex;
+  gap: 0.75rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.genealogy-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 0.75rem;
+  border: 2px solid #4b5563;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.genealogy-choice input {
+  width: 24px;
+  height: 24px;
+}
+
+.genealogy-hint {
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.genealogy-error {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #7f1d1d;
+  font-weight: 600;
+}
+
+.genealogy-success {
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #dcfce7;
+  color: #14532d;
+  font-weight: 600;
+}
+
+.genealogy-rejected ul,
+.genealogy-history ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.genealogy-cached {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  background: #e5e7eb;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+/* Link status (tree and history). */
+.genealogy-status {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.genealogy-status--VALIDADO {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+.genealogy-status--PENDIENTE_VALIDACION {
+  background: #fef3c7;
+  color: #78350f;
+}
+
+.genealogy-status--NO_REGISTRADO {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px dashed #6b7280;
+}
+
+.genealogy-status--CORREGIDO {
+  background: #e0e7ff;
+  color: #312e81;
+}
+
+.genealogy-status--RECHAZADO {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+
+/* Pedigree tree: collapsible generations on mobile, grid on desktop. */
+.genealogy-generation summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.genealogy-positions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.genealogy-position {
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 2px solid #d1d5db;
+  background: #ffffff;
+}
+
+.genealogy-position--NO_REGISTRADO {
+  border-style: dashed;
+  background: #f9fafb;
+}
+
+.genealogy-position--PENDIENTE_VALIDACION {
+  border-color: #b45309;
+}
+
+/* Inbreeding warning tones (WCAG AA on white text or dark text). */
+.genealogy-risk {
+  padding: 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.genealogy-risk--high {
+  background: #991b1b;
+  color: #ffffff;
+}
+
+.genealogy-risk--moderate {
+  background: #b45309;
+  color: #ffffff;
+}
+
+.genealogy-risk--low {
+  background: #fde68a;
+  color: #713f12;
+}
+
+.genealogy-risk--neutral {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+@media (min-width: 768px) {
+  .genealogy {
+    padding: 1.5rem;
+  }
+
+  .genealogy-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .genealogy-positions {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "farm_id": 1,
+  "note": "Datos ficticios de demostración (HU-07). No corresponden a animales reales.",
+  "animals": [
+    {
+      "din": "DIN-DEMO-000101",
+      "name": "Aurora",
+      "sex": "HEMBRA",
+      "birth_date": "2025-03-10",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000102",
+      "name": "Titán",
+      "sex": "MACHO",
+      "birth_date": "2021-02-01",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000103",
+      "name": "Canela",
+      "sex": "HEMBRA",
+      "birth_date": "2021-05-15",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000104",
+      "name": "Brioso",
+      "sex": "MACHO",
+      "birth_date": "2017-01-10",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000105",
+      "name": "Mora",
+      "sex": "HEMBRA",
+      "birth_date": "2017-04-02",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000106",
+      "name": "Centella",
+      "sex": "MACHO",
+      "birth_date": "2017-03-03",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000107",
+      "name": "Violeta",
+      "sex": "HEMBRA",
+      "birth_date": "2017-06-20",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000108",
+      "name": "Roble",
+      "sex": "MACHO",
+      "birth_date": "2012-02-14",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000109",
+      "name": "Estrella",
+      "sex": "HEMBRA",
+      "birth_date": "2012-05-03",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000110",
+      "name": "Trueno",
+      "sex": "MACHO",
+      "birth_date": "2012-08-21",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000111",
+      "name": "Luna",
+      "sex": "HEMBRA",
+      "birth_date": "2012-11-09",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000112",
+      "name": "Capitán",
+      "sex": "MACHO",
+      "birth_date": "2013-01-17",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000113",
+      "name": "Gaviota",
+      "sex": "HEMBRA",
+      "birth_date": "2013-03-28",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000114",
+      "name": "Bravo",
+      "sex": "MACHO",
+      "birth_date": "2013-06-12",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000115",
+      "name": "Azucena",
+      "sex": "HEMBRA",
+      "birth_date": "2013-09-30",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000116",
+      "name": "Rayo",
+      "sex": "MACHO",
+      "birth_date": "2025-01-20",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000117",
+      "name": "Paloma",
+      "sex": "HEMBRA",
+      "birth_date": "2020-08-08",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000118",
+      "name": "Lucero",
+      "sex": "HEMBRA",
+      "birth_date": "2022-02-02",
+      "origin": "PROPIO"
+    },
+    {
+      "din": "DIN-DEMO-000119",
+      "name": "Bruma",
+      "sex": "MACHO",
+      "birth_date": "2026-10-01",
+      "origin": "PROPIO"
+    }
+  ],
+  "links": [
+    {
+      "offspring_din": "DIN-DEMO-000101",
+      "parent_din": "DIN-DEMO-000102",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000101",
+      "parent_din": "DIN-DEMO-000103",
+      "parent_role": "DAM",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000102",
+      "parent_din": "DIN-DEMO-000104",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000102",
+      "parent_din": "DIN-DEMO-000105",
+      "parent_role": "DAM",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000103",
+      "parent_din": "DIN-DEMO-000106",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000103",
+      "parent_din": "DIN-DEMO-000107",
+      "parent_role": "DAM",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000104",
+      "parent_din": "DIN-DEMO-000108",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000104",
+      "parent_din": "DIN-DEMO-000109",
+      "parent_role": "DAM",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000105",
+      "parent_din": "DIN-DEMO-000110",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000105",
+      "parent_din": "DIN-DEMO-000111",
+      "parent_role": "DAM",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000106",
+      "parent_din": "DIN-DEMO-000112",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000106",
+      "parent_din": "DIN-DEMO-000113",
+      "parent_role": "DAM",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000107",
+      "parent_din": "DIN-DEMO-000114",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000107",
+      "parent_din": "DIN-DEMO-000115",
+      "parent_role": "DAM",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000116",
+      "parent_din": "DIN-DEMO-000102",
+      "parent_role": "SIRE",
+      "initial_status": "VALIDADO",
+      "author_id": "seed",
+      "author_role": "SEED"
+    },
+    {
+      "offspring_din": "DIN-DEMO-000116",
+      "parent_din": "DIN-DEMO-000117",
+      "parent_role": "DAM",
+      "initial_status": "PENDIENTE_VALIDACION",
+      "author_id": "seed-operario",
+      "author_role": "OPERARIO"
+    }
+  ]
+}

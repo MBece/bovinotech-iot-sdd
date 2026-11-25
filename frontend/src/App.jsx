@@ -16,6 +16,7 @@ import { AlertsPanel } from './features/alerts';
 import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
 import { OfflineSyncProvider, SyncNowButton, SyncStatusBadge } from './features/offline-sync';
 import { ObservabilityDashboard } from './features/observability_ops/ObservabilityDashboard';
+import { navItem as genealogyNavItem, GenealogyView } from './features/genealogy';
 import './App.css';
 
 function Dashboard() {
@@ -77,6 +78,18 @@ function Dashboard() {
               style={dashboardStyles.navigationBtn}
             >
               {productivityNavItem.icon} {productivityNavItem.label}
+            </button>
+          </nav>
+        )}
+        {genealogyNavItem.requiredRole.includes(role) && (
+          <nav aria-label="Navegación de genealogía" style={dashboardStyles.navigation}>
+            <button
+              type="button"
+              aria-current={activeView === 'genealogy' ? 'page' : undefined}
+              onClick={() => setActiveView(activeView === 'genealogy' ? 'dashboard' : 'genealogy')}
+              style={dashboardStyles.navigationBtn}
+            >
+              {genealogyNavItem.icon} {genealogyNavItem.label}
             </button>
           </nav>
         )}
@@ -173,6 +186,9 @@ function Dashboard() {
         {role === 'ADMINISTRADOR' && <UserAdminPanel />}
         {activeView === 'productivity' && productivityNavItem.requiredRole.includes(role) && (
           <ProductivityView user={user} role={role} farmId={user?.farmId} />
+        )}
+        {activeView === 'genealogy' && genealogyNavItem.requiredRole.includes(role) && (
+          <GenealogyView token={user.token} role={role} />
         )}
         <OfflineSyncProvider />
         <ObservabilityDashboard />
