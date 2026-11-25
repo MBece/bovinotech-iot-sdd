@@ -75,6 +75,13 @@ from app.features.telemetry.models import (  # noqa: F401
 from app.features.telemetry.router import router as telemetry_router
 from app.features.telemetry.schema_migration import ensure_telemetry_schema
 from app.features.telemetry.seed import seed_telemetry
+from app.features.genealogy.models import (  # noqa: F401
+    GenealogyAnimal,
+    GenealogyLinkValidation,
+    GenealogyParentLink,
+)
+from app.features.genealogy.router import router as genealogy_router
+from app.features.genealogy.service import seed_genealogy
 
 Base.metadata.create_all(bind=engine)
 ensure_auth_schema(engine)
@@ -88,6 +95,7 @@ seed_catalog()
 with SessionLocal() as telemetry_seed_db:
     seed_telemetry(telemetry_seed_db)
 seed_animal_weights()
+seed_genealogy()
 
 app = FastAPI(title="BovinoTech IoT API", version="1.0.0")
 
@@ -138,6 +146,11 @@ app.include_router(
     productivity_router,
     prefix="/productivity",
     tags=["Productividad por lote"],
+)
+app.include_router(
+    genealogy_router,
+    prefix="/genealogy",
+    tags=["Genealogía y consanguinidad"],
 )
 
 
