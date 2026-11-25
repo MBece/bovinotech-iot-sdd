@@ -176,6 +176,21 @@ Inicia gemini en la raiz del proyecto (la primera vez pedira autenticar con cuen
 7. Auditar y Validar (@qa-seguridad): Verificar seguridad, correr pytest y npm run build.
 8. Subir cambios: git push -u origin feat/hu-0X-nombre-modulo y abrir Pull Request hacia main.
 
+### Catálogo oficial de especificaciones
+
+El alcance activo contiene las cinco historias implementadas y la HU-006 en validación. Cada historia mantiene la cadena `spec.md` → `plan.md` → `tasks.md` → `progress.md` dentro de su carpeta numerada.
+
+| Spec | Módulo | Estado |
+|---|---|---|
+| `001-auth-rbac` | `auth` | Completada |
+| `002-offline-capture` | `offline_capture` | Completada |
+| `003-offline-sync` | `offline_sync` | Completada |
+| `004-sanitary-events` | `sanitary_events` | Completada |
+| `005-sinigan-sync` | `sinigan_sync` | Completada |
+| `006-telemetry-alerts` | `telemetry` | En validación |
+
+La HU-006 fue reincorporada el 2026-11-24 por decisión del Product Owner. Las propuestas HU-07 a HU-10 permanecen fuera del alcance activo.
+
 ---
 
 ## Historias de Usuario del Proyecto (Backlog MVP)
