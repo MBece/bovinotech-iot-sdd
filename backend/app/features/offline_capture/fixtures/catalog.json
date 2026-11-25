@@ -1,0 +1,105 @@
+{
+  "description": "Fictitious seed catalog for offline capture (HU-02 R7). No real data.",
+  "animals": [
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000001",
+      "name": "Luna"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000002",
+      "name": "Canela"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000003",
+      "name": "Manchas"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000004",
+      "name": "Estrella"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000005",
+      "name": "Paloma"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000006",
+      "name": "Negra"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000007",
+      "name": "Mora"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000008",
+      "name": "Pinta"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000009",
+      "name": "Bonita"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000010",
+      "name": "Clavel"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000011",
+      "name": "Azucena"
+    },
+    {
+      "farm_id": 1,
+      "din": "DIN-DEMO-000012",
+      "name": "Gitana"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000101",
+      "name": "Tormenta"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000102",
+      "name": "Lucero"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000103",
+      "name": "Princesa"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000104",
+      "name": "Morena"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000105",
+      "name": "Dalia"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000106",
+      "name": "Rosita"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000107",
+      "name": "Perla"
+    },
+    {
+      "farm_id": 2,
+      "din": "DIN-DEMO-000108",
+      "name": "Violeta"
+    }
+  ]
+}

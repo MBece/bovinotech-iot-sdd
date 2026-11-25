@@ -26,6 +26,7 @@ def test_processing_same_client_event_twice_creates_one_record():
         din="DIN-DEMO-000001",
         eventType="CHECKUP",
         fieldOccurredAt=datetime.now(timezone.utc),
+        finding="Sin hallazgos",
     )
     batch = SyncBatchRequest(items=[item])
     service = SanitaryEventSyncService(MockSiniganAdapter())
@@ -33,7 +34,7 @@ def test_processing_same_client_event_twice_creates_one_record():
     first = service.process_batch(batch, user, session)
     second = service.process_batch(batch, user, session)
 
-    assert first[0].status == "CREADO"
+    assert first[0].status == "SINCRONIZADO"
     assert second[0].status == "DUPLICADO"
     assert first[0].event_id == second[0].event_id
     session.close()

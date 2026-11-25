@@ -11,10 +11,13 @@ import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
 import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
 import { UserAdminPanel } from './features/auth/UserAdminPanel';
 import { roleInfo } from './features/auth/roles';
+import { OfflineCapturePanel } from './features/offline-capture/OfflineCapturePanel';
+import { OfflineSyncProvider, SyncNowButton, SyncStatusBadge } from './features/offline-sync';
+import { ObservabilityDashboard } from './features/observability_ops/ObservabilityDashboard';
 import './App.css';
 
 function Dashboard() {
-  const { user, role, logout } = useAuth();
+  const { user, role, logout, canCapture } = useAuth();
   const [testMessage, setTestMessage] = useState(null);
   const [testError, setTestError] = useState(null);
   const [loadingTest, setLoadingTest] = useState(false);
@@ -56,6 +59,8 @@ function Dashboard() {
         <button onClick={logout} style={dashboardStyles.logoutBtn}>
           Cerrar Sesión
         </button>
+        <SyncStatusBadge />
+        <SyncNowButton />
       </header>
 
       <main style={dashboardStyles.main}>
@@ -70,12 +75,25 @@ function Dashboard() {
 
         <div style={dashboardStyles.workflowGrid}>
           <SiniganAnimalLookup token={user.token} onAnimalSelected={setSelectedAnimal} />
-          <OfflineSanitaryCapture
-            token={user.token}
-            userEmail={user.email}
-            selectedAnimal={selectedAnimal}
-            onSynchronized={() => setHistoryRefresh((value) => value + 1)}
-          />
+          {canCapture ? (
+            <>
+              <OfflineSanitaryCapture
+                token={user.token}
+                userEmail={user.email}
+                selectedAnimal={selectedAnimal}
+                onSynchronized={() => setHistoryRefresh((value) => value + 1)}
+              />
+              <OfflineCapturePanel />
+            </>
+          ) : (
+            <section style={dashboardStyles.card} aria-labelledby="readonly-title">
+              <h2 id="readonly-title">Consulta de solo lectura</h2>
+              <p>
+                Su rol no puede registrar ni sincronizar eventos sanitarios. Puede consultar
+                animales e historiales dentro de su finca activa.
+              </p>
+            </section>
+          )}
         </div>
 
         <SanitaryHistory
@@ -86,12 +104,14 @@ function Dashboard() {
           refreshSignal={historyRefresh}
         />
 
-        <SiniganReconciliation
-          key={user.farmId ?? 'sin-finca'}
-          token={user.token}
-          role={role}
-          farmId={user.farmId}
-        />
+        {['VETERINARIO', 'ADMINISTRADOR'].includes(role) && (
+          <SiniganReconciliation
+            key={user.farmId ?? 'sin-finca'}
+            token={user.token}
+            role={role}
+            farmId={user.farmId}
+          />
+        )}
 
         <KpiDashboard
           token={user.token}
@@ -135,6 +155,8 @@ function Dashboard() {
         </div>
 
         {role === 'ADMINISTRADOR' && <UserAdminPanel />}
+        <OfflineSyncProvider />
+        <ObservabilityDashboard />
       </main>
     </div>
   );

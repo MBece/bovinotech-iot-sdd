@@ -36,7 +36,7 @@ Cada decisión tiene el formato Decisión / Justificación / Alternativas.
 
 ## R6. Pruebas del frontend sin dependencias nuevas
 
-- **Decisión**: los módulos puros (validador, búsqueda de animales, mapeo de eventos preliminares, armado del evento) se prueban con el runner nativo de Node, ejecutando `node --test src/features/offline-capture/` desde `frontend/`, **sin modificar `package.json`** (constitución §2: los únicos archivos compartidos son `main.py` y `App.jsx`). Añadir un script `test` y el paso en CI se pide por coordinación. Los repositorios IndexedDB reciben su almacenamiento por inyección; las pruebas usan un doble en memoria. La persistencia real entre reinicios se valida a mano (quickstart).
+- **Decisión**: los módulos puros (validador, búsqueda de animales, mapeo de eventos preliminares, armado del evento) se prueban con el runner nativo de Node, ejecutando `node --test 'src/features/offline-capture/*.test.js'` desde `frontend/`, **sin modificar `package.json`** (constitución §2: los únicos archivos compartidos son `main.py` y `App.jsx`). Añadir un script `test` y el paso en CI se pide por coordinación. Los repositorios IndexedDB reciben su almacenamiento por inyección; las pruebas usan un doble en memoria. La persistencia real entre reinicios se valida a mano (quickstart).
 - **Justificación**: cumple TDD sin añadir paquetes (`vitest`, `fake-indexeddb`) ni tocar `package.json`/`package-lock.json`, y sin alargar el CI (< 90 s).
 - **Alternativas**: `vitest` + `fake-indexeddb` (más cobertura de IndexedDB, pero dos dependencias nuevas y más tiempo de CI); no probar el frontend (incumple TDD).
 

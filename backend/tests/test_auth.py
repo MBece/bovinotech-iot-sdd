@@ -54,4 +54,4 @@ def test_rbac_veterinario_only_access_allowed_for_vet():
         headers={"Authorization": f"Bearer {token}"}
     )
     assert response.status_code == 200
-    assert response.json()["message"] == "Welcome Veterinarian"
+    assert response.json()["message"] == "Acceso veterinario concedido"

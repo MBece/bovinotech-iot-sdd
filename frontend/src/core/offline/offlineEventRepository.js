@@ -38,10 +38,16 @@ export const offlineEventRepository = {
     return withStore('readonly', (store) => store.getAll());
   },
 
-  async updateStatus(clientEventId, status, detail = null) {
+  async updateStatus(clientEventId, syncStatus, detail = null) {
     const event = await withStore('readonly', (store) => store.get(clientEventId));
     if (!event) return null;
-    const updated = { ...event, status, syncDetail: detail };
+    const legacyStatus = {
+      PENDIENTE_SINCRONIZACION: 'PENDING_SYNC',
+      SINCRONIZADO: 'SYNCED',
+      DUPLICADO: 'SYNCED',
+      FALLIDO: 'REJECTED',
+    }[syncStatus] || event.status;
+    const updated = { ...event, syncStatus, status: legacyStatus, syncDetail: detail };
     await this.save(updated);
     return updated;
   },

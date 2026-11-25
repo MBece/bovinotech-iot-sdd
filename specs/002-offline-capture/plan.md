@@ -27,7 +27,7 @@ La nueva captura reemplaza a la preliminar: copia sus pendientes sin modificarlo
 - Servidor: tabla SQLite `offline_capture_animals`, creada con `create_all` (R7).
 **Pruebas**:
 - Backend: `pytest` (contrato y API).
-- Frontend: `node --test src/features/offline-capture/`, nativo de Node (sin script en `package.json`), sobre módulos puros con almacenamiento inyectado (R6).
+- Frontend: `node --test 'src/features/offline-capture/*.test.js'`, nativo de Node (sin script en `package.json`), sobre módulos puros con almacenamiento inyectado (R6).
 **Plataforma objetivo**: navegador móvil moderno (PWA existente).
 **Tipo de proyecto**: aplicación web (backend + frontend).
 **Metas de rendimiento**:
@@ -140,7 +140,7 @@ frontend/src/App.jsx     # registra <OfflineCapturePanel />
    - `OfflineCapturePanel` en `App.jsx`, visible solo con `canCapture`;
    - copia de pendientes preliminares al montar.
 7. **Coordinación**: redactar `coordination-sanitary-events.md` con el retiro de la vista preliminar, `DEWORMING` y los campos nuevos en `/sync` (HU-03), y el script `test` más su paso en CI.
-8. **Validación**: `pytest`, `node --test src/features/offline-capture/`, `npm run lint`, `npm run build` y [quickstart.md](quickstart.md).
+8. **Validación**: `pytest`, `node --test 'src/features/offline-capture/*.test.js'`, `npm run lint`, `npm run build` y [quickstart.md](quickstart.md).
 
 ## Seguimiento de Complejidad
 

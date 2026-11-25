@@ -1,131 +1,94 @@
-# Feature Specification: [FEATURE NAME]
+# Especificación de Funcionalidad: [NOMBRE DE LA FUNCIONALIDAD]
 
-**Feature Branch**: `[###-feature-name]`
+**Rama de Funcionalidad**: `[###-nombre-funcionalidad]`
 
-**Created**: [DATE]
+**Fecha de Creación**: [FECHA]
 
-**Status**: Draft
+**Estado**: Draft
 
-**Input**: User description: "$ARGUMENTS"
+**Entrada**: Descripción de usuario: "$ARGUMENTS"
 
-## User Scenarios & Testing *(mandatory)*
+## Escenarios de Usuario y Pruebas *(obligatorio)*
 
 <!--
-  IMPORTANT: User stories should be PRIORITIZED as user journeys ordered by importance.
-  Each user story/journey must be INDEPENDENTLY TESTABLE - meaning if you implement just ONE of them,
-  you should still have a viable MVP (Minimum Viable Product) that delivers value.
-
-  Assign priorities (P1, P2, P3, etc.) to each story, where P1 is the most critical.
-  Think of each story as a standalone slice of functionality that can be:
-  - Developed independently
-  - Tested independently
-  - Deployed independently
-  - Demonstrated to users independently
+  IMPORTANTE: Las historias de usuario deben priorizarse como viajes de usuario ordenados por importancia.
+  Cada historia debe ser PROBABLE DE FORMA INDEPENDIENTE (Rebanada Vertical MVP).
+  Asigna prioridades (P1, P2, P3...), donde P1 es la más crítica.
+  Idiomas: Especificación en ESPAÑOL. Prohibido mencionar tecnologías, frameworks o bases de datos aquí (solo el QUÉ).
 -->
 
-### User Story 1 - [Brief Title] (Priority: P1)
+### Historia de Usuario 1 - [Título Breve] (Prioridad: P1)
 
-[Describe this user journey in plain language]
+[Descripción del viaje de usuario en lenguaje claro y de negocio]
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Rol y Dispositivo Objetivo**: [e.g., OPERARIO en smartphone rural / VETERINARIO en escritorio]
 
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Por qué esta prioridad**: [Explica el valor ganadero/operativo y su nivel de criticidad]
 
-**Acceptance Scenarios**:
+**Prueba Independiente**: [Describe cómo verificar esta historia de forma autónoma con su valor de entrega]
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+**Escenarios de Aceptación**:
+
+1. **Given** [estado inicial en finca/sistema], **When** [acción realizada por el usuario], **Then** [resultado esperado observable]
+2. **Given** [estado inicial], **When** [acción], **Then** [resultado esperado]
 
 ---
 
-### User Story 2 - [Brief Title] (Priority: P2)
+### Historia de Usuario 2 - [Título Breve] (Prioridad: P2)
 
-[Describe this user journey in plain language]
+[Descripción del viaje de usuario]
 
-**Why this priority**: [Explain the value and why it has this priority level]
+**Rol y Dispositivo Objetivo**: [OPERARIO / VETERINARIO]
 
-**Independent Test**: [Describe how this can be tested independently]
+**Por qué esta prioridad**: [Explicación de valor]
 
-**Acceptance Scenarios**:
+**Prueba Independiente**: [Cómo probar de forma aislada]
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+**Escenarios de Aceptación**:
 
----
-
-### User Story 3 - [Brief Title] (Priority: P3)
-
-[Describe this user journey in plain language]
-
-**Why this priority**: [Explain the value and why it has this priority level]
-
-**Independent Test**: [Describe how this can be tested independently]
-
-**Acceptance Scenarios**:
-
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** [estado inicial], **When** [acción], **Then** [resultado esperado]
 
 ---
 
-[Add more user stories as needed, each with an assigned priority]
+### Casos de Borde y Condiciones Rurales
 
-### Edge Cases
+- ¿Qué ocurre ante la pérdida total de conectividad en campo (operación Offline-First e idempotencia)?
+- ¿Cómo se maneja si el animal reportado difiere del registro oficial de SINIGÁN V6 (cola de conflictos)?
+- ¿Cómo se previene la alteración destructiva de eventos sanitarios históricos (historial append-only)?
+- ¿Qué alerta se muestra si el animal consultado se encuentra en "Tiempo de Retiro" farmacológico activo?
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right edge cases.
--->
+## Requisitos *(obligatorio)*
 
-- What happens when [boundary condition]?
-- How does system handle [error scenario]?
+### Requisitos Funcionales
 
-## Requirements *(mandatory)*
+- **FR-001**: El sistema DEBE [capacidad específica del dominio ganadero]
+- **FR-002**: El sistema DEBE [regla de validación o control de acceso RBAC]
+- **FR-003**: El operario/veterinario DEBE poder [interacción clave de negocio]
+- **FR-004**: Los eventos generados DEBEN ser inmutables (append-only con `corrected_event_id` ante correcciones)
+- **FR-005**: Toda sincronización offline DEBE ser idempotente mediante identificador único de cliente (`client_event_id` UUID)
 
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right functional requirements.
--->
+### Requisitos de Experiencia y Entorno (UI, Responsive y Campo)
 
-### Functional Requirements
+- **UI-001**: La interfaz móvil (< 768 px) para operarios DEBE ofrecer áreas táctiles mínimas de 48x48 px y alto contraste legible bajo luz solar.
+- **UI-002**: La funcionalidad DEBE registrar su entrada en el Menú Lateral (Sidebar) filtrando la visibilidad según el rol activo (OPERARIO vs VETERINARIO).
+- **UI-003**: Si la funcionalidad captura datos en campo, DEBE persistir localmente sin internet y reflejar el estado en el monitor de conectividad del App Shell.
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+### Entidades Clave *(incluir si la funcionalidad involucra datos)*
 
-*Example of marking unclear requirements:*
+- **[Entidad 1, ej. Bovino]**: [Qué representa en la finca, atributos conceptuales clave (código SINIGÁN, raza, etc.) sin implementación técnica]
+- **[Entidad 2, ej. Evento Sanitario]**: [Qué evento registra, inmutabilidad, relación con el animal]
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+## Criterios de Éxito y Metas de Servicio (SLO) *(obligatorio)*
 
-### Key Entities *(include if feature involves data)*
+### Resultados Medibles
 
-- **[Entity 1]**: [What it represents, key attributes without implementation]
-- **[Entity 2]**: [What it represents, relationships to other entities]
+- **SC-001**: [Métrica de negocio, ej. "El 100% de los tratamientos se registran con trazabilidad SINIGÁN"]
+- **SC-002 (SLO Latencia)**: [Métrica operativa, ej. "Alertas críticas de salud procesadas en menos de 10 segundos"]
+- **SC-003 (SLO Disponibilidad/Offline)**: [e.g., "100% de operaciones de campo disponibles sin conexión con cero pérdida de eventos al sincronizar"]
+- **SC-004**: [Métrica de satisfacción/adopción, ej. "Tiempo de registro en manga inferior a 30 segundos por animal"]
 
-## Success Criteria *(mandatory)*
+## Supuestos y Restricciones de Dominio
 
-<!--
-  ACTION REQUIRED: Define measurable success criteria.
-  These must be technology-agnostic and measurable.
--->
-
-### Measurable Outcomes
-
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
-
-## Assumptions
-
-<!--
-  ACTION REQUIRED: The content in this section represents placeholders.
-  Fill them out with the right assumptions based on reasonable defaults
-  chosen when the feature description did not specify certain details.
--->
-
-- [Assumption about target users, e.g., "Users have stable internet connectivity"]
-- [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
-- [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
-- [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+- [Supuesto de conectividad: Operación rural intermitente que depende del cliente offline-first]
+- [Supuesto de roles: Permisos diferenciados entre Operario de campo y Médico Veterinario]
+- [Dependencia o fuente de verdad: SINIGÁN V6 como autoridad canónica de identificación]
