@@ -10,6 +10,7 @@ import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
 import { SessionStatusBanner } from './features/auth/SessionStatusBanner';
 import { UserAdminPanel } from './features/auth/UserAdminPanel';
 import { roleInfo } from './features/auth/roles';
+import { AlertsPanel } from './features/alerts';
 import './App.css';
 
 function Dashboard() {
@@ -91,6 +92,8 @@ function Dashboard() {
           role={role}
           farmId={user.farmId}
         />
+
+        <AlertsPanel />
 
         <div style={dashboardStyles.card}>
           <h2>Control de acceso por roles</h2>
