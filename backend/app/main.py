@@ -41,6 +41,12 @@ from app.features.sinigan_sync.service import seed_field_animals
 from app.features.kpi_dashboard.router import router as kpi_dashboard_router
 from app.features.kpi_dashboard.models import AnimalWeight  # noqa: F401
 from app.features.kpi_dashboard.seed import seed_animal_weights
+from app.features.productivity.models import (
+    ProductivityConsumption,
+    ProductivityWeighing,
+    ProductivityWeighingReview,
+)
+from app.features.productivity.router import router as productivity_router
 
 
 # ── Optional imports (main-only modules) ────────────────────────────────────
@@ -157,6 +163,11 @@ app.include_router(
     kpi_dashboard_router,
     prefix="/dashboard",
     tags=["Dashboard de indicadores"],
+)
+app.include_router(
+    productivity_router,
+    prefix="/productivity",
+    tags=["Productividad por lote"],
 )
 
 

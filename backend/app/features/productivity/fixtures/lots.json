@@ -1,0 +1,8 @@
+[
+  {
+    "lote_id": "LOTE-01",
+    "farm_id": 1,
+    "name": "Lote demostración",
+    "animal_dins": ["DIN-DEMO-0001", "DIN-DEMO-0002"]
+  }
+]

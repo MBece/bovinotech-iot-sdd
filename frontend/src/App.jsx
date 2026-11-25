@@ -5,6 +5,7 @@ import { authService } from './features/auth/authService';
 import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
 import { SiniganReconciliation } from './features/sinigan-sync/SiniganReconciliation';
 import { KpiDashboard } from './features/kpi-dashboard/KpiDashboard';
+import { navItem as productivityNavItem, ProductivityView } from './features/productivity';
 import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
 import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
 import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
@@ -15,6 +16,7 @@ import './App.css';
 
 function Dashboard() {
   const { user, role, logout } = useAuth();
+  const [activeView, setActiveView] = useState('dashboard');
   const [testMessage, setTestMessage] = useState(null);
   const [testError, setTestError] = useState(null);
   const [loadingTest, setLoadingTest] = useState(false);
@@ -60,6 +62,18 @@ function Dashboard() {
 
       <main style={dashboardStyles.main}>
         <SessionStatusBanner />
+        {productivityNavItem.requiredRole.includes(role) && (
+          <nav aria-label="Navegación principal" style={dashboardStyles.navigation}>
+            <button
+              type="button"
+              aria-current={activeView === 'productivity' ? 'page' : undefined}
+              onClick={() => setActiveView(activeView === 'productivity' ? 'dashboard' : 'productivity')}
+              style={dashboardStyles.navigationBtn}
+            >
+              {productivityNavItem.icon} {productivityNavItem.label}
+            </button>
+          </nav>
+        )}
         <section style={dashboardStyles.intro}>
           <span style={dashboardStyles.kicker}>MVP académico · trazabilidad rural</span>
           <h2 style={dashboardStyles.introTitle}>Del DIN a un evento sanitario verificable</h2>
@@ -135,6 +149,9 @@ function Dashboard() {
         </div>
 
         {role === 'ADMINISTRADOR' && <UserAdminPanel />}
+        {activeView === 'productivity' && productivityNavItem.requiredRole.includes(role) && (
+          <ProductivityView user={user} role={role} farmId={user?.farmId} />
+        )}
       </main>
     </div>
   );
@@ -199,6 +216,21 @@ const dashboardStyles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '1.5rem',
+  },
+  navigation: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+  },
+  navigationBtn: {
+    minHeight: '48px',
+    padding: '0.65rem 1rem',
+    borderRadius: '6px',
+    border: '1px solid #075b42',
+    backgroundColor: '#075b42',
+    color: '#ffffff',
+    fontWeight: '700',
+    cursor: 'pointer',
   },
   intro: {
     padding: '1.5rem',
