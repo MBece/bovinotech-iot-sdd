@@ -4,6 +4,7 @@ import { LoginForm } from './features/auth/LoginForm';
 import { authService } from './features/auth/authService';
 import { SiniganAnimalLookup } from './features/sinigan/SiniganAnimalLookup';
 import { SiniganReconciliation } from './features/sinigan-sync/SiniganReconciliation';
+import { KpiDashboard } from './features/kpi-dashboard/KpiDashboard';
 import { OfflineSanitaryCapture } from './features/sanitary-events/OfflineSanitaryCapture';
 import { SanitaryHistory } from './features/sanitary-events/SanitaryHistory';
 import { ChangePasswordForm } from './features/auth/ChangePasswordForm';
@@ -90,6 +91,13 @@ function Dashboard() {
           token={user.token}
           role={role}
           farmId={user.farmId}
+        />
+
+        <KpiDashboard
+          token={user.token}
+          role={role}
+          farmId={user.farmId}
+          farms={user.farms}
         />
 
         <div style={dashboardStyles.card}>

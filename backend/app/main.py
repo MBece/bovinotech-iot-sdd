@@ -25,6 +25,9 @@ from app.features.sinigan_sync.schema_migration import (
     ensure_sinigan_sync_schema,
 )
 from app.features.sinigan_sync.service import seed_field_animals
+from app.features.kpi_dashboard.router import router as kpi_dashboard_router
+from app.features.kpi_dashboard.models import AnimalWeight  # noqa: F401
+from app.features.kpi_dashboard.seed import seed_animal_weights
 
 # Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
@@ -32,6 +35,7 @@ ensure_auth_schema(engine)
 ensure_sinigan_sync_schema(engine)
 seed_initial_users()
 seed_field_animals()
+seed_animal_weights()
 
 app = FastAPI(title="BovinoTech IoT API", version="1.0.0")
 
@@ -59,6 +63,11 @@ app.include_router(
     sanitary_events_router,
     prefix="/sanitary-events",
     tags=["Eventos sanitarios"],
+)
+app.include_router(
+    kpi_dashboard_router,
+    prefix="/dashboard",
+    tags=["Dashboard de indicadores"],
 )
 
 
