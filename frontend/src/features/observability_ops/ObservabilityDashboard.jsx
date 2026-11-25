@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+const API_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8000';
+
 export function ObservabilityDashboard() {
   const [metricsData, setMetricsData] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -11,8 +13,8 @@ export function ObservabilityDashboard() {
     const load = async () => {
       try {
         const [metricsResp, logsResp] = await Promise.all([
-          fetch('http://127.0.0.1:8000/ops/metrics'),
-          fetch('http://127.0.0.1:8000/ops/logs'),
+          fetch(`${API_URL}/ops/metrics`),
+          fetch(`${API_URL}/ops/logs`),
         ]);
         if (!isMounted) return;
         if (metricsResp.ok) {
@@ -39,8 +41,8 @@ export function ObservabilityDashboard() {
   const refreshData = async () => {
     try {
       const [metricsResp, logsResp] = await Promise.all([
-        fetch('http://127.0.0.1:8000/ops/metrics'),
-        fetch('http://127.0.0.1:8000/ops/logs'),
+        fetch(`${API_URL}/ops/metrics`),
+        fetch(`${API_URL}/ops/logs`),
       ]);
       if (metricsResp.ok) {
         const m = await metricsResp.json();
@@ -59,7 +61,7 @@ export function ObservabilityDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const resp = await fetch('http://127.0.0.1:8000/ops/simulate-degradation', {
+      const resp = await fetch(`${API_URL}/ops/simulate-degradation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
