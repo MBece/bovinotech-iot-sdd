@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.database import Base, engine
+from app.core.database import Base, SessionLocal, engine
 from app.features.auth.models import User  # noqa: F401
 from app.features.auth.router import router as auth_router, seed_initial_users
 from app.features.auth.schema_migration import ensure_auth_schema
@@ -25,13 +25,29 @@ from app.features.sinigan_sync.schema_migration import (
     ensure_sinigan_sync_schema,
 )
 from app.features.sinigan_sync.service import seed_field_animals
+from app.features.telemetry.models import (  # noqa: F401
+    AlertClosure,
+    AlertRuleVersion,
+    GeofenceVersion,
+    TelemetryAlert,
+    TelemetryBatch,
+    TelemetryDevice,
+    TelemetryEvaluation,
+    TelemetryReading,
+)
+from app.features.telemetry.router import router as telemetry_router
+from app.features.telemetry.schema_migration import ensure_telemetry_schema
+from app.features.telemetry.seed import seed_telemetry
 
 # Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
 ensure_auth_schema(engine)
 ensure_sinigan_sync_schema(engine)
+ensure_telemetry_schema(engine)
 seed_initial_users()
 seed_field_animals()
+with SessionLocal() as telemetry_seed_db:
+    seed_telemetry(telemetry_seed_db)
 
 app = FastAPI(title="BovinoTech IoT API", version="1.0.0")
 
@@ -60,6 +76,7 @@ app.include_router(
     prefix="/sanitary-events",
     tags=["Eventos sanitarios"],
 )
+app.include_router(telemetry_router, prefix="/telemetry", tags=["Telemetría y alertas"])
 
 
 @app.get("/health")
