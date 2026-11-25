@@ -46,6 +46,18 @@ def _seed_field_animals_if_available(db) -> bool:
     return True
 
 
+def _seed_kpi_weights_if_available(db) -> bool:
+    """Seed HU-09 AnimalWeight records when the module under test exists."""
+    try:
+        from app.features.kpi_dashboard.seed import seed_animal_weights
+    except ModuleNotFoundError as exc:
+        if exc.name and exc.name.startswith("app.features.kpi_dashboard"):
+            return False
+        raise
+    seed_animal_weights(db)
+    return True
+
+
 @pytest.fixture(autouse=True)
 def isolated_database():
     Base.metadata.drop_all(bind=test_engine)
@@ -53,6 +65,7 @@ def isolated_database():
     db = TestingSessionLocal()
     seed_initial_users(db)
     field_animals_seeded = _seed_field_animals_if_available(db)
+    _seed_kpi_weights_if_available(db)
     db.close()
     app.dependency_overrides[get_db] = override_get_db
     yield field_animals_seeded

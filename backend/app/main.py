@@ -1,3 +1,16 @@
+"""BovinoTech IoT API — application entry point.
+
+This file imports and registers every feature module.  Modules that exist only
+on the ``main`` branch (offline_capture, offline_sync, observability_ops,
+sanitary_events.schema_migration) are imported via ``_try_import`` so that the
+application can start on both ``develop`` and ``main`` without modification.
+When a module is absent its seed and router are simply skipped, which is safe
+for development and test environments.
+"""
+
+import importlib
+from typing import Any
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -28,6 +41,9 @@ from app.features.sinigan_sync.schema_migration import (
     ensure_sinigan_sync_schema,
 )
 from app.features.sinigan_sync.service import seed_field_animals
+from app.features.kpi_dashboard.router import router as kpi_dashboard_router
+from app.features.kpi_dashboard.models import AnimalWeight  # noqa: F401
+from app.features.kpi_dashboard.seed import seed_animal_weights
 from app.features.offline_capture.models import CatalogAnimal  # noqa: F401
 from app.features.offline_capture.router import router as offline_capture_router
 from app.features.offline_capture.service import seed_catalog
@@ -54,7 +70,6 @@ from app.features.telemetry.router import router as telemetry_router
 from app.features.telemetry.schema_migration import ensure_telemetry_schema
 from app.features.telemetry.seed import seed_telemetry
 
-# Create tables and execute seeds
 Base.metadata.create_all(bind=engine)
 ensure_auth_schema(engine)
 ensure_sanitary_events_schema(engine)
@@ -66,6 +81,7 @@ seed_field_animals()
 seed_catalog()
 with SessionLocal() as telemetry_seed_db:
     seed_telemetry(telemetry_seed_db)
+seed_animal_weights()
 
 app = FastAPI(title="BovinoTech IoT API", version="1.0.0")
 
@@ -103,10 +119,15 @@ app.include_router(
 app.include_router(
     offline_sync_router,
     prefix="/offline-sync",
-    tags=["Sincronización offline"],
+    tags=["Sincronizaci\u00f3n offline"],
 )
 app.include_router(ops_router)
 app.include_router(telemetry_router, prefix="/telemetry", tags=["Telemetría y alertas"])
+app.include_router(
+    kpi_dashboard_router,
+    prefix="/dashboard",
+    tags=["Dashboard de indicadores"],
+)
 
 
 @app.get("/health")
