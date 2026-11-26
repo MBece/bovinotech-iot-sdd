@@ -254,6 +254,40 @@ describe('genealogy offline queue - tolerant reads (H-05)', () => {
     assert.deepEqual(queueFor(OPERATOR, storage).list().map((item) => item.client_event_id), ['ok']);
   });
 
+  it('keeps every set-aside copy when corrupt content appears more than once (H-05)', () => {
+    const storage = makeStorage({ [GENEALOGY_QUEUE_KEY]: '{first' });
+    const queue = queueFor(OPERATOR, storage);
+    queue.list();
+    storage.values.set(GENEALOGY_QUEUE_KEY, '{second');
+    queue.list();
+
+    assert.equal(storage.values.get(`${GENEALOGY_QUEUE_KEY}${GENEALOGY_CORRUPT_SUFFIX}`), '{first');
+    assert.equal(storage.values.get(`${GENEALOGY_QUEUE_KEY}${GENEALOGY_CORRUPT_SUFFIX}_2`), '{second');
+  });
+
+  it('drops rejected entries without error or payload so the view cannot crash (H-05)', () => {
+    const storage = makeStorage({
+      [GENEALOGY_REJECTED_KEY]: JSON.stringify([
+        { client_event_id: 'no-error', payload: { owner: OPERATOR } },
+        { client_event_id: 'no-payload', error: { code: 'X', message: 'm' } },
+        { client_event_id: 'ok', payload: { owner: OPERATOR, kind: 'LINK', body: {} }, error: { code: 'X', message: 'm' } },
+      ]),
+    });
+    assert.deepEqual(queueFor(OPERATOR, storage).listRejected().map((item) => item.client_event_id), ['ok']);
+  });
+
+  it('drops queue entries whose payload is not an object (H-05)', () => {
+    const storage = makeStorage({
+      [GENEALOGY_QUEUE_KEY]: JSON.stringify([
+        { client_event_id: 'no-payload', status: 'pending', payload: null },
+        { client_event_id: 'ok', status: 'pending', payload: { ...linkPayload('ok'), owner: OPERATOR } },
+      ]),
+    });
+    const queue = queueFor(OPERATOR, storage);
+    assert.deepEqual(queue.list().map((item) => item.client_event_id), ['ok']);
+    assert.equal(queue.foreignCount(), 0);
+  });
+
   it('does not throw when storage itself is unavailable', () => {
     const storage = { getItem: () => { throw new Error('SecurityError'); }, setItem: () => {} };
     const queue = queueFor(OPERATOR, storage);

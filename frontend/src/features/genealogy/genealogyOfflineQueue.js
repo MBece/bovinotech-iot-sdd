@@ -7,15 +7,36 @@ export const GENEALOGY_CORRUPT_SUFFIX = '_corrupt';
 const AUTH_STATUSES = new Set([401, 403]);
 const TRANSIENT_STATUSES = new Set([408, 429]);
 
+const isObject = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
 const isEntry = (item) =>
-  Boolean(item) && typeof item === 'object' && typeof item.client_event_id === 'string';
+  isObject(item) && typeof item.client_event_id === 'string' && isObject(item.payload);
+
+const isRejection = (item) => isEntry(item) && isObject(item.error);
+
+const isStoredCopy = (storage, name) => {
+  try {
+    return storage.getItem(name) !== null;
+  } catch {
+    return true;
+  }
+};
+
+// First free `<key>_corrupt[_n]` slot, so an earlier set-aside copy is never overwritten.
+const freeCorruptSlot = (storage, key) => {
+  const base = `${key}${GENEALOGY_CORRUPT_SUFFIX}`;
+  let name = base;
+  for (let n = 2; isStoredCopy(storage, name); n += 1) name = `${base}_${n}`;
+  return name;
+};
 
 /**
  * Tolerant read (H-05): corrupt JSON or a non-array value is set aside under
- * `<key>_corrupt` (never lost) and the list is treated as empty; malformed
- * entries inside a valid array are skipped; unavailable storage reads as empty.
+ * `<key>_corrupt[_n]` (never lost, earlier copies kept) and the list is treated
+ * as empty; malformed entries inside a valid array are skipped; unavailable
+ * storage reads as empty.
  */
-const readList = (storage, key) => {
+const readList = (storage, key, accept = isEntry) => {
   let raw;
   try {
     raw = storage.getItem(key);
@@ -31,14 +52,14 @@ const readList = (storage, key) => {
   }
   if (!Array.isArray(value)) {
     try {
-      storage.setItem(`${key}${GENEALOGY_CORRUPT_SUFFIX}`, raw);
+      storage.setItem(freeCorruptSlot(storage, key), raw);
       storage.setItem(key, '[]');
     } catch {
       // Storage unavailable: the list is still treated as empty.
     }
     return [];
   }
-  return value.filter(isEntry);
+  return value.filter(accept);
 };
 
 const saveList = (storage, key, items) => {
@@ -77,7 +98,7 @@ export const createGenealogyOfflineQueue = ({
     },
 
     listRejected() {
-      return readList(storage, GENEALOGY_REJECTED_KEY).filter(isOwn);
+      return readList(storage, GENEALOGY_REJECTED_KEY, isRejection).filter(isOwn);
     },
 
     pendingCount() {
@@ -163,7 +184,7 @@ export const createGenealogyOfflineQueue = ({
             setStatus(event.client_event_id, 'failed');
             return summary(null);
           }
-          const rejected = readList(storage, GENEALOGY_REJECTED_KEY);
+          const rejected = readList(storage, GENEALOGY_REJECTED_KEY, isRejection);
           rejected.push({
             client_event_id: event.client_event_id,
             timestamp_utc: event.timestamp_utc,
